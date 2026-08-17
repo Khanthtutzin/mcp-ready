@@ -8,7 +8,7 @@ patches land on the newest version only.
 ## Reporting a vulnerability
 
 Please report security issues privately through
-[GitHub Security Advisories](https://github.com/OWNER/mcp-ready/security/advisories/new)
+[GitHub Security Advisories](https://github.com/Khanthtutzin/mcp-ready/security/advisories/new)
 rather than opening a public issue.
 
 Include what the issue is, how to reproduce it, and what an attacker could do

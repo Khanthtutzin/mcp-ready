@@ -4,8 +4,8 @@ contact_links:
     url: https://modelcontextprotocol.io/specification/2026-07-28/changelog
     about: The authoritative list of what changed. Worth reading before filing a rule request.
   - name: Rule catalogue
-    url: https://github.com/OWNER/mcp-ready/blob/main/docs/rules/README.md
+    url: https://github.com/Khanthtutzin/mcp-ready/blob/main/docs/rules/README.md
     about: Every check mcp-ready performs, and what is deliberately not covered yet.
   - name: Report a security issue
-    url: https://github.com/OWNER/mcp-ready/security/advisories/new
+    url: https://github.com/Khanthtutzin/mcp-ready/security/advisories/new
     about: Please report vulnerabilities privately rather than as a public issue.

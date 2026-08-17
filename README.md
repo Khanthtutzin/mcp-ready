@@ -2,7 +2,7 @@
 
 **Is your MCP server ready for the 2026-07-28 stateless specification?**
 
-[![CI](https://github.com/OWNER/mcp-ready/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/mcp-ready/actions/workflows/ci.yml)
+[![CI](https://github.com/Khanthtutzin/mcp-ready/actions/workflows/ci.yml/badge.svg)](https://github.com/Khanthtutzin/mcp-ready/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/mcp-ready.svg)](https://www.npmjs.com/package/mcp-ready)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
@@ -146,7 +146,7 @@ validation, and Client ID Metadata Documents. See
 As a GitHub Action:
 
 ```yaml
-- uses: OWNER/mcp-ready@v1
+- uses: Khanthtutzin/mcp-ready@v1
   with:
     stdio: node dist/server.js
 ```
@@ -234,7 +234,7 @@ ANSI. Nothing is installed into your CI beyond this package.
 
 Adding a rule is one file plus one test — rules never touch the transport
 layer, only a shared `ProbeContext`. See [CONTRIBUTING.md](CONTRIBUTING.md),
-and the [`good first issue`](https://github.com/OWNER/mcp-ready/labels/good%20first%20issue)
+and the [`good first issue`](https://github.com/Khanthtutzin/mcp-ready/labels/good%20first%20issue)
 label.
 
 The test suite runs every rule against real fixture MCP servers over real

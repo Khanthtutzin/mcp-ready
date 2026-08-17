@@ -6,7 +6,7 @@ a **false-positive report**, and both are deliberately cheap to make.
 ## Getting set up
 
 ```bash
-git clone https://github.com/OWNER/mcp-ready.git
+git clone https://github.com/Khanthtutzin/mcp-ready.git
 cd mcp-ready
 npm install
 npm test

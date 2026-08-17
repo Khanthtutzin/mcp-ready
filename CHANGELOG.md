@@ -48,5 +48,5 @@ Initial release. Checks a live MCP server against revision
 - Generated per-rule documentation under `docs/rules/`, with a CI check that
   keeps it in step with the rule sources.
 
-[Unreleased]: https://github.com/OWNER/mcp-ready/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/mcp-ready/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Khanthtutzin/mcp-ready/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Khanthtutzin/mcp-ready/releases/tag/v0.1.0

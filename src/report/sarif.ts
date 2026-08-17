@@ -23,7 +23,7 @@ export function renderSarif(report: RunReport, version: string): string {
           driver: {
             name: 'mcp-ready',
             version,
-            informationUri: 'https://github.com/mcp-ready/mcp-ready',
+            informationUri: 'https://github.com/Khanthtutzin/mcp-ready',
             rules: ALL_RULES.map((rule) => ({
               id: rule.id,
               name: rule.id,
