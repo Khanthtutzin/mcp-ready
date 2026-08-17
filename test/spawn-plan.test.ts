@@ -55,6 +55,29 @@ describe('resolveWindowsExecutable', () => {
     expect(resolved!.toLowerCase().endsWith('.cmd')).toBe(true);
   });
 
+  it('honours the PATHEXT it is given rather than the ambient one', () => {
+    // Regression: pathExtensions() used to read process.env directly while the
+    // function advertised an `env` parameter. On Windows the ambient PATHEXT
+    // happened to contain .CMD so tests passed; on a case-sensitive filesystem
+    // with no PATHEXT set it fell back to uppercase defaults and matched
+    // nothing. CI caught it, a local run never would.
+    const dirPath = fileURLToPath(new URL('./fixtures/fakebin/', import.meta.url));
+
+    const withCmd = resolveWindowsExecutable('faketool', {
+      PATH: dirPath,
+      PATHEXT: '.cmd',
+    });
+    expect(withCmd, 'given .cmd, should find faketool.cmd').toBeTruthy();
+
+    // Given an extension list that cannot match, the only remaining candidate
+    // is the extensionless file — never faketool.cmd.
+    const withoutCmd = resolveWindowsExecutable('faketool', {
+      PATH: dirPath,
+      PATHEXT: '.nomatch',
+    });
+    expect(withoutCmd?.endsWith('.cmd') ?? false).toBe(false);
+  });
+
   it('returns null when nothing matches', () => {
     const resolved = resolveWindowsExecutable('no-such-binary-9f3a1c', {
       PATH: '',

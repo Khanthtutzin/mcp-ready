@@ -27,9 +27,16 @@ export interface SpawnPlan {
 
 const IS_WINDOWS = process.platform === 'win32';
 
-/** Extensions Windows treats as executable, from PATHEXT. */
-function pathExtensions(): string[] {
-  const raw = process.env['PATHEXT'] ?? '.COM;.EXE;.BAT;.CMD';
+/**
+ * Extensions Windows treats as executable, from PATHEXT.
+ *
+ * Takes `env` rather than reading `process.env`: the caller already threads an
+ * environment through for testability, and honouring it only halfway meant
+ * this resolved differently under a case-sensitive filesystem than under
+ * Windows — which CI caught and a local run never would.
+ */
+function pathExtensions(env: NodeJS.ProcessEnv): string[] {
+  const raw = env['PATHEXT'] ?? '.COM;.EXE;.BAT;.CMD';
   return raw.split(';').filter(Boolean);
 }
 
@@ -51,7 +58,7 @@ export function resolveWindowsExecutable(
   bin: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string | null {
-  const exts = pathExtensions();
+  const exts = pathExtensions(env);
   const hasSeparator = bin.includes('/') || bin.includes('\\');
   const lower = bin.toLowerCase();
   const alreadyExecutable = exts.some((ext) => lower.endsWith(ext.toLowerCase()));
