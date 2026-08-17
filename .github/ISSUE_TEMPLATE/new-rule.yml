@@ -1,0 +1,56 @@
+name: New rule
+description: Propose a check for a 2026-07-28 change that is not yet covered
+title: 'Rule: '
+labels: ['new-rule', 'enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Rules are cheap to add — one file, one fixture behaviour, one test. See
+        [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) if you would like to
+        write it yourself.
+
+  - type: input
+    id: changelog
+    attributes:
+      label: Changelog entry this would enforce
+      placeholder: 'Major change 7 (SEP-2322)'
+    validations:
+      required: true
+
+  - type: input
+    id: spec
+    attributes:
+      label: Specification link
+      placeholder: https://modelcontextprotocol.io/specification/2026-07-28/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: How could a live probe detect this?
+      description: |
+        What request would the tool send, and what would distinguish a
+        migrated server from an unmigrated one? Checks that cannot be probed
+        reliably are better left out than guessed at.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - error — a 2026-07-28 client will not work against this server
+        - warning — deprecated, a SHOULD, or a degradation
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: transports
+    attributes:
+      label: Applies to
+      options:
+        - label: stdio
+        - label: Streamable HTTP

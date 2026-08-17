@@ -1,0 +1,59 @@
+{
+  "name": "mcp-ready",
+  "version": "0.1.0",
+  "description": "Check whether an MCP server is ready for the 2026-07-28 stateless specification.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "conformance",
+    "migration",
+    "stateless",
+    "2026-07-28",
+    "cli"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "mcp-ready": "./dist/cli/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "docs:rules": "node scripts/gen-rule-docs.mjs",
+    "docs:check": "node scripts/gen-rule-docs.mjs --check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.17.0",
+    "globals": "^17.11.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.0"
+  },
+  "packageManager": "npm@10.0.0"
+}

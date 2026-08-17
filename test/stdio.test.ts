@@ -1,0 +1,95 @@
+import { describe, expect, it } from 'vitest';
+import { checkStdio, crashedRules, ruleIds } from './helpers.js';
+
+describe('stdio — legacy 2025-11-25 server', () => {
+  it('reports every applicable breaking change', async () => {
+    const report = await checkStdio('legacy');
+
+    expect(crashedRules(report)).toEqual([]);
+    expect(report.ready).toBe(false);
+    expect(ruleIds(report, 'error')).toEqual([
+      'MCP001', // server/discover missing
+      'MCP002', // still requires initialize
+      'MCP004', // no resultType
+      'MCP005', // no ttlMs / cacheScope
+      'MCP006', // ping still live
+      'MCP007', // logging/setLevel still live
+      'MCP008', // resources/subscribe still live
+      'MCP009', // listChanged advertised, subscriptions/listen missing
+      'MCP011', // -32002 for resource not found
+      'MCP012', // -32004 not renumbered
+    ]);
+  });
+
+  it('reports the deprecation advisories', async () => {
+    const report = await checkStdio('legacy');
+    expect(ruleIds(report, 'warning')).toEqual(
+      expect.arrayContaining(['MCP015', 'MCP017', 'MCP018']),
+    );
+  });
+
+  it('does not blame _meta handling when the real cause is the handshake', async () => {
+    // MCP013 and MCP002 both key off a failed bare tools/list. Only MCP002
+    // should claim it.
+    const report = await checkStdio('legacy');
+    expect(ruleIds(report)).not.toContain('MCP013');
+  });
+
+  it('reports both symptoms of the removed handshake', async () => {
+    const report = await checkStdio('legacy', { only: ['MCP002'] });
+    const titles = report.findings.map((f) => f.title);
+    expect(titles).toContain('Server still requires the initialize handshake');
+    expect(titles).toContain('Server still accepts the removed initialize method');
+  });
+
+  it('skips http-only rules', async () => {
+    const report = await checkStdio('legacy');
+    const ran = report.outcomes.map((o) => o.rule.id);
+    for (const httpOnly of ['MCP003', 'MCP010', 'MCP014', 'MCP016']) {
+      expect(ran).not.toContain(httpOnly);
+    }
+  });
+});
+
+describe('stdio — compliant 2026-07-28 server', () => {
+  it('reports nothing at all', async () => {
+    const report = await checkStdio('modern');
+
+    expect(crashedRules(report)).toEqual([]);
+    expect(report.findings).toEqual([]);
+    expect(report.ready).toBe(true);
+    expect(report.errorCount).toBe(0);
+    expect(report.warningCount).toBe(0);
+  });
+
+  it('runs every stdio rule', async () => {
+    const report = await checkStdio('modern');
+    expect(report.outcomes.length).toBe(14);
+  });
+});
+
+describe('stdio — server that rejects the _meta envelope', () => {
+  it('isolates the cause to MCP013', async () => {
+    const report = await checkStdio('strict-params');
+    expect(crashedRules(report)).toEqual([]);
+    expect(ruleIds(report, 'error')).toContain('MCP013');
+
+    const finding = report.findings.find((f) => f.ruleId === 'MCP013')!;
+    expect(finding.observed).toMatch(/succeeded when _meta was omitted/);
+  });
+});
+
+describe('rule selection', () => {
+  it('honours --only', async () => {
+    const report = await checkStdio('legacy', { only: ['MCP006'] });
+    expect(report.outcomes.map((o) => o.rule.id)).toEqual(['MCP006']);
+  });
+
+  it('honours --skip', async () => {
+    const report = await checkStdio('legacy', { skip: ['MCP001', 'MCP002'] });
+    const ran = report.outcomes.map((o) => o.rule.id);
+    expect(ran).not.toContain('MCP001');
+    expect(ran).not.toContain('MCP002');
+    expect(ran).toContain('MCP006');
+  });
+});

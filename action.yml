@@ -1,0 +1,147 @@
+name: 'mcp-ready'
+description: 'Check whether an MCP server is ready for the 2026-07-28 stateless specification.'
+author: 'mcp-ready contributors'
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  stdio:
+    description: 'Command that starts the MCP server on stdio. Mutually exclusive with `http`.'
+    required: false
+  http:
+    description: 'Streamable HTTP endpoint of the MCP server. Mutually exclusive with `stdio`.'
+    required: false
+  header:
+    description: 'Extra HTTP header, as "Name: value". One per line for several.'
+    required: false
+  format:
+    description: 'Output format: text, json, sarif or markdown.'
+    required: false
+    default: 'text'
+  output:
+    description: 'Write the report to this file instead of stdout.'
+    required: false
+  fail-on:
+    description: 'Fail the step on: error (default), warning, or never.'
+    required: false
+    default: 'error'
+  only:
+    description: 'Comma-separated rule ids to run exclusively.'
+    required: false
+  skip:
+    description: 'Comma-separated rule ids to skip.'
+    required: false
+  timeout:
+    description: 'Per-request timeout in milliseconds.'
+    required: false
+  verbose:
+    description: 'Include the JSON-RPC traffic behind each finding.'
+    required: false
+    default: 'false'
+  summary:
+    description: 'Append a markdown report to the GitHub step summary.'
+    required: false
+    default: 'true'
+
+outputs:
+  ready:
+    description: '"true" when no breaking issues were found.'
+    value: ${{ steps.check.outputs.ready }}
+  errors:
+    description: 'Number of breaking findings.'
+    value: ${{ steps.check.outputs.errors }}
+  warnings:
+    description: 'Number of advisory findings.'
+    value: ${{ steps.check.outputs.warnings }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run mcp-ready
+      id: check
+      shell: bash
+      env:
+        INPUT_STDIO: ${{ inputs.stdio }}
+        INPUT_HTTP: ${{ inputs.http }}
+        INPUT_HEADER: ${{ inputs.header }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_ONLY: ${{ inputs.only }}
+        INPUT_SKIP: ${{ inputs.skip }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+        INPUT_VERBOSE: ${{ inputs.verbose }}
+        INPUT_SUMMARY: ${{ inputs.summary }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "$INPUT_STDIO" ] && [ -z "$INPUT_HTTP" ]; then
+          echo "::error::Provide either the 'stdio' or the 'http' input."
+          exit 1
+        fi
+        if [ -n "$INPUT_STDIO" ] && [ -n "$INPUT_HTTP" ]; then
+          echo "::error::Provide only one of 'stdio' or 'http'."
+          exit 1
+        fi
+
+        args=()
+        if [ -n "$INPUT_STDIO" ]; then args+=(--stdio "$INPUT_STDIO"); fi
+        if [ -n "$INPUT_HTTP" ]; then args+=(--http "$INPUT_HTTP"); fi
+        if [ -n "$INPUT_HEADER" ]; then
+          while IFS= read -r line; do
+            [ -n "$line" ] && args+=(--header "$line")
+          done <<< "$INPUT_HEADER"
+        fi
+        if [ -n "$INPUT_ONLY" ]; then args+=(--only "$INPUT_ONLY"); fi
+        if [ -n "$INPUT_SKIP" ]; then args+=(--skip "$INPUT_SKIP"); fi
+        if [ -n "$INPUT_TIMEOUT" ]; then args+=(--timeout "$INPUT_TIMEOUT"); fi
+        if [ "$INPUT_VERBOSE" = "true" ]; then args+=(--verbose); fi
+
+        # Always produce JSON for the step outputs, separately from whatever
+        # the user asked to see.
+        json_file="$(mktemp)"
+        set +e
+        npx --yes mcp-ready "${args[@]}" --format json --output "$json_file" --fail-on never
+        probe_status=$?
+        set -e
+
+        if [ "$probe_status" -ne 0 ] || [ ! -s "$json_file" ]; then
+          echo "::error::mcp-ready could not reach the server."
+          exit 1
+        fi
+
+        ready=$(node -e "console.log(require('$json_file').ready)")
+        errors=$(node -e "console.log(require('$json_file').summary.errors)")
+        warnings=$(node -e "console.log(require('$json_file').summary.warnings)")
+
+        echo "ready=$ready" >> "$GITHUB_OUTPUT"
+        echo "errors=$errors" >> "$GITHUB_OUTPUT"
+        echo "warnings=$warnings" >> "$GITHUB_OUTPUT"
+
+        # Now render what the user actually asked for.
+        display=(--format "$INPUT_FORMAT" --fail-on never)
+        if [ -n "$INPUT_OUTPUT" ]; then display+=(--output "$INPUT_OUTPUT"); fi
+        npx --yes mcp-ready "${args[@]}" "${display[@]}"
+
+        if [ "$INPUT_SUMMARY" = "true" ]; then
+          npx --yes mcp-ready "${args[@]}" --format markdown --fail-on never \
+            >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        case "$INPUT_FAIL_ON" in
+          never) exit 0 ;;
+          warning)
+            if [ "$errors" -gt 0 ] || [ "$warnings" -gt 0 ]; then
+              echo "::error::mcp-ready found $errors breaking and $warnings advisory issue(s)."
+              exit 1
+            fi
+            ;;
+          *)
+            if [ "$errors" -gt 0 ]; then
+              echo "::error::mcp-ready found $errors breaking issue(s). See the step summary."
+              exit 1
+            fi
+            ;;
+        esac

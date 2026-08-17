@@ -1,0 +1,55 @@
+name: Bug report
+description: Something in mcp-ready itself is broken
+title: 'Bug: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a rule that flagged something incorrectly, use the **False
+        positive** template instead.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Command you ran
+      render: bash
+      placeholder: npx mcp-ready --http https://example.com/mcp --verbose
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: '**Redact any tokens** before pasting.'
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: mcp-ready version
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version and OS
+      placeholder: 'node 22.11.0, Ubuntu 24.04'
+    validations:
+      required: true

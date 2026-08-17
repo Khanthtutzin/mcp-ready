@@ -1,0 +1,52 @@
+name: False positive
+description: mcp-ready flagged something that is actually correct
+title: '[MCP0NN] False positive: '
+labels: ['false-positive', 'bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        False positives are treated as bugs, not preferences. A tool that cries
+        wolf gets uninstalled, so thank you for reporting this.
+
+  - type: input
+    id: rule
+    attributes:
+      label: Rule id
+      placeholder: MCP004
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Verbose output
+      description: |
+        Run with `--only <RULE> --verbose` so the JSON-RPC exchange is included.
+        **Redact any tokens** before pasting.
+      placeholder: npx mcp-ready --stdio "node dist/server.js" --only MCP004 --verbose
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Why you believe your server is correct
+      description: Quote the specification if you can.
+    validations:
+      required: true
+
+  - type: input
+    id: sdk
+    attributes:
+      label: SDK and version
+      placeholder: '@modelcontextprotocol/sdk 2.1.0, or "hand-rolled"'
+
+  - type: input
+    id: version
+    attributes:
+      label: mcp-ready version
+      placeholder: 'output of: npx mcp-ready --version'
+    validations:
+      required: true

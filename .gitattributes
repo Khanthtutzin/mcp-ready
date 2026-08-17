@@ -1,0 +1,12 @@
+# Normalize line endings so contributors on Windows, macOS and Linux see the
+# same diffs, and so the shell steps in .github/workflows keep working.
+* text=auto eol=lf
+
+# The generated rule docs must round-trip byte-for-byte, or `npm run docs:check`
+# fails on a clean checkout.
+docs/rules/*.md text eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
