@@ -12,6 +12,7 @@ const SESSION_HEADER = HTTP_HEADERS.legacySessionId.toLowerCase();
 export const MCP003: Rule = {
   id: 'MCP003',
   title: 'Server still uses the removed Mcp-Session-Id header',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/transports/streamable-http'),
   changelogRef: 'Major change 1 (SEP-2567)',

@@ -38,6 +38,7 @@ const DEPRECATED_CAPABILITIES: Array<{
 export const MCP015: Rule = {
   id: 'MCP015',
   title: 'Server declares deprecated Roots, Sampling or Logging capabilities',
+  remediation: 'application',
   severity: 'warning',
   specRef: specUrl('deprecated'),
   changelogRef: 'Deprecated 1 (SEP-2577)',

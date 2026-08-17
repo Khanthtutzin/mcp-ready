@@ -10,6 +10,7 @@ import { describe, finding, type Finding, type Rule } from './types.js';
 export const MCP001: Rule = {
   id: 'MCP001',
   title: 'server/discover is not implemented',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/lifecycle'),
   changelogRef: 'Major change 3 (SEP-2575)',

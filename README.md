@@ -95,10 +95,24 @@ Deprecations and advisories (4)
       spec      https://modelcontextprotocol.io/specification/2026-07-28/server/tools
 
 NOT READY — 5 breaking issues across 14 checks.
+  4 of those are protocol plumbing owned by your MCP SDK — upgrading to a release
+  that targets 2026-07-28 resolves them with no change to your code.
+  1 needs a change in your server: MCP009
 Finished in 64ms.
 ```
 
 Add `--verbose` to see the JSON-RPC exchange behind each finding.
+
+### The SDK line matters
+
+Most of what breaks is protocol plumbing your MCP SDK owns — you never wrote a
+`ping` handler, the SDK registered one. Telling you to go delete it would send
+you hunting through code you do not maintain.
+
+So every rule declares who fixes it, and the summary splits on that line. In
+practice, against a server built on an SDK, the great majority of findings clear
+themselves the day you upgrade — and the short list that remains is the part
+actually worth your afternoon.
 
 ## What it checks
 
@@ -107,31 +121,31 @@ Add `--verbose` to see the JSON-RPC exchange behind each finding.
 
 ### Breaking
 
-| Rule                           | Check                                                  | Transports  |
-| ------------------------------ | ------------------------------------------------------ | ----------- |
-| [MCP001](docs/rules/MCP001.md) | `server/discover` not implemented                      | stdio, http |
-| [MCP002](docs/rules/MCP002.md) | Still requires the `initialize` handshake              | stdio, http |
-| [MCP003](docs/rules/MCP003.md) | Still uses the removed `Mcp-Session-Id` header         | http        |
-| [MCP004](docs/rules/MCP004.md) | Results missing required `resultType`                  | stdio, http |
-| [MCP005](docs/rules/MCP005.md) | List results missing `ttlMs` / `cacheScope`            | stdio, http |
-| [MCP006](docs/rules/MCP006.md) | Removed `ping` still implemented                       | stdio, http |
-| [MCP007](docs/rules/MCP007.md) | Removed `logging/setLevel` still implemented           | stdio, http |
-| [MCP008](docs/rules/MCP008.md) | Removed `resources/subscribe` still implemented        | stdio, http |
-| [MCP009](docs/rules/MCP009.md) | `subscriptions/listen` missing despite `listChanged`   | stdio, http |
-| [MCP010](docs/rules/MCP010.md) | Removed HTTP GET stream endpoint still served          | http        |
-| [MCP011](docs/rules/MCP011.md) | Resource-not-found still returns `-32002`              | stdio, http |
-| [MCP012](docs/rules/MCP012.md) | Protocol error codes not renumbered                    | stdio, http |
-| [MCP013](docs/rules/MCP013.md) | Rejects requests carrying the `_meta` envelope         | stdio, http |
-| [MCP014](docs/rules/MCP014.md) | Rejects the required `Mcp-Method` / `Mcp-Name` headers | http        |
+| Rule                           | Check                                                  | Transports  | Fixed by    |
+| ------------------------------ | ------------------------------------------------------ | ----------- | ----------- |
+| [MCP001](docs/rules/MCP001.md) | `server/discover` not implemented                      | stdio, http | SDK upgrade |
+| [MCP002](docs/rules/MCP002.md) | Still requires the `initialize` handshake              | stdio, http | SDK upgrade |
+| [MCP003](docs/rules/MCP003.md) | Still uses the removed `Mcp-Session-Id` header         | http        | SDK upgrade |
+| [MCP004](docs/rules/MCP004.md) | Results missing required `resultType`                  | stdio, http | SDK upgrade |
+| [MCP005](docs/rules/MCP005.md) | List results missing `ttlMs` / `cacheScope`            | stdio, http | SDK upgrade |
+| [MCP006](docs/rules/MCP006.md) | Removed `ping` still implemented                       | stdio, http | SDK upgrade |
+| [MCP007](docs/rules/MCP007.md) | Removed `logging/setLevel` still implemented           | stdio, http | SDK upgrade |
+| [MCP008](docs/rules/MCP008.md) | Removed `resources/subscribe` still implemented        | stdio, http | SDK upgrade |
+| [MCP009](docs/rules/MCP009.md) | `subscriptions/listen` missing despite `listChanged`   | stdio, http | your code   |
+| [MCP010](docs/rules/MCP010.md) | Removed HTTP GET stream endpoint still served          | http        | SDK upgrade |
+| [MCP011](docs/rules/MCP011.md) | Resource-not-found still returns `-32002`              | stdio, http | SDK upgrade |
+| [MCP012](docs/rules/MCP012.md) | Protocol error codes not renumbered                    | stdio, http | SDK upgrade |
+| [MCP013](docs/rules/MCP013.md) | Rejects requests carrying the `_meta` envelope         | stdio, http | your code   |
+| [MCP014](docs/rules/MCP014.md) | Rejects the required `Mcp-Method` / `Mcp-Name` headers | http        | SDK upgrade |
 
 ### Deprecations and advisories
 
-| Rule                           | Check                                          | Transports  |
-| ------------------------------ | ---------------------------------------------- | ----------- |
-| [MCP015](docs/rules/MCP015.md) | Declares deprecated Roots / Sampling / Logging | stdio, http |
-| [MCP016](docs/rules/MCP016.md) | Deprecated HTTP+SSE transport                  | http        |
-| [MCP017](docs/rules/MCP017.md) | `tools/list` ordering not deterministic        | stdio, http |
-| [MCP018](docs/rules/MCP018.md) | Results do not identify the server via `_meta` | stdio, http |
+| Rule                           | Check                                          | Transports  | Fixed by    |
+| ------------------------------ | ---------------------------------------------- | ----------- | ----------- |
+| [MCP015](docs/rules/MCP015.md) | Declares deprecated Roots / Sampling / Logging | stdio, http | your code   |
+| [MCP016](docs/rules/MCP016.md) | Deprecated HTTP+SSE transport                  | http        | SDK upgrade |
+| [MCP017](docs/rules/MCP017.md) | `tools/list` ordering not deterministic        | stdio, http | your code   |
+| [MCP018](docs/rules/MCP018.md) | Results do not identify the server via `_meta` | stdio, http | SDK upgrade |
 
 ### Deliberately not covered yet
 
@@ -140,6 +154,24 @@ honestly, so they are tracked as issues rather than checked unreliably: Multi
 Round-Trip Request conformance, the tasks-extension migration, RFC 9207 `iss`
 validation, and Client ID Metadata Documents. See
 [the catalogue](docs/rules/README.md#not-yet-covered).
+
+## Tested against real servers
+
+Beyond the fixture suite, `mcp-ready` is run against the official
+`@modelcontextprotocol/*` servers. As of 2026-08-17, none of them has migrated —
+and neither has the TypeScript SDK, whose latest release (`1.30.0`) predates the
+specification by a day.
+
+| Server                       | Breaking | Advisory | SDK / your code |
+| ---------------------------- | -------- | -------- | --------------- |
+| `server-everything`          | 10       | 2        | 9 / 1           |
+| `server-memory`              | 9        | 1        | 8 / 1           |
+| `server-filesystem`          | 7        | 1        | 6 / 1           |
+| `server-sequential-thinking` | 7        | 1        | 6 / 1           |
+
+Zero false positives and zero rule crashes across all four. If you find a case
+where a rule is wrong, that is a bug — please
+[report it](https://github.com/Khanthtutzin/mcp-ready/issues/new?template=false-positive.yml).
 
 ## In CI
 

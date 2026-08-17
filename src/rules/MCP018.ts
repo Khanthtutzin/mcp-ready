@@ -11,6 +11,7 @@ import { finding, type Finding, type Rule } from './types.js';
 export const MCP018: Rule = {
   id: 'MCP018',
   title: 'Results do not identify the server via _meta serverInfo',
+  remediation: 'sdk',
   severity: 'warning',
   specRef: specUrl('basic/index#meta'),
   changelogRef: 'Major change 2 (SEP-2575)',

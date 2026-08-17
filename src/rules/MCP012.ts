@@ -32,6 +32,7 @@ const RENUMBERED: Array<{ old: number; now: number; name: string }> = [
 export const MCP012: Rule = {
   id: 'MCP012',
   title: 'Protocol error codes were not renumbered into the reserved range',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/index#error-codes'),
   changelogRef: 'Minor change 12',

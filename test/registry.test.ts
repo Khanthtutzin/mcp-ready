@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ALL_RULES, ruleById, rulesFor } from '../src/rules/index.js';
+import { ALL_RULES, finding, ruleById, rulesFor } from '../src/rules/index.js';
 
 const docsDir = fileURLToPath(new URL('../docs/rules/', import.meta.url));
 
@@ -26,6 +26,21 @@ describe('rule registry', () => {
       expect(rule.changelogRef, rule.id).not.toBe('');
       expect(rule.title, rule.id).not.toBe('');
       expect(rule.appliesTo.length, rule.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('says who fixes every rule', () => {
+    for (const rule of ALL_RULES) {
+      expect(['sdk', 'application'], rule.id).toContain(rule.remediation);
+    }
+  });
+
+  it('propagates remediation onto the findings a rule produces', () => {
+    // A finding that lost its remediation would be silently miscounted in the
+    // summary rather than failing loudly.
+    for (const rule of ALL_RULES) {
+      const built = finding(rule, { observed: 'o', expected: 'e', fix: 'f' });
+      expect(built.remediation, rule.id).toBe(rule.remediation);
     }
   });
 

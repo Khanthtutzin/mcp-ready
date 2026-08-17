@@ -47,6 +47,7 @@ import { finding, type Finding, type Rule } from './types.js';
 export const MCP0NN: Rule = {
   id: 'MCP0NN',
   title: 'Short, specific statement of what is wrong',
+  remediation: 'sdk', // or 'application' — see below
   severity: 'error', // or 'warning' for deprecations and SHOULDs
   specRef: specUrl('basic/lifecycle'),
   changelogRef: 'Major change N (SEP-NNNN)',
@@ -130,6 +131,24 @@ A confirmed false positive is treated as a bug, not a preference.
 
 When in doubt, use `warning`. Being wrong in the `error` direction costs users
 a broken build.
+
+## Rule remediation
+
+Every rule also declares **who has to make the change**:
+
+- `sdk` — protocol plumbing an MCP SDK owns. Upgrading to an SDK release that
+  targets 2026-07-28 resolves it with no change to the server's own code.
+- `application` — a choice the server author made: capabilities they declared,
+  schemas they wrote, deprecated features they opted into.
+
+This came out of running the checker against the official MCP servers. Nearly
+every finding was SDK plumbing, and telling a maintainer to "delete the ping
+handler" is unhelpful when the SDK registered it and they have never seen it.
+The summary splits on this line so the short, genuinely actionable list is
+visible at a glance.
+
+Ask yourself: _if they upgraded their SDK tomorrow and changed nothing else,
+would this finding disappear?_ If yes, it is `sdk`.
 
 ## Scope
 

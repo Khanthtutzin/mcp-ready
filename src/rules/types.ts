@@ -5,6 +5,21 @@ export type Severity = 'error' | 'warning';
 export type TransportKind = 'stdio' | 'http';
 
 /**
+ * Who actually has to make the change.
+ *
+ * This distinction came out of running the checker against the official MCP
+ * servers: nearly every finding was protocol plumbing owned by the SDK, not
+ * something the server author wrote. Telling a maintainer to "delete the ping
+ * handler" is unhelpful when they never wrote one — the SDK registered it.
+ *
+ * - `sdk`         — resolved by upgrading to an SDK release that targets
+ *                   2026-07-28. Nothing to do in the server's own code.
+ * - `application` — a choice the server author made: capabilities they
+ *                   declared, schemas they wrote, features they opted into.
+ */
+export type Remediation = 'sdk' | 'application';
+
+/**
  * One thing a server does that 2026-07-28 says it should not.
  *
  * A finding is written to be actionable on its own: what we saw, what the spec
@@ -13,6 +28,8 @@ export type TransportKind = 'stdio' | 'http';
 export interface Finding {
   ruleId: string;
   severity: Severity;
+  /** Whether an SDK upgrade fixes this, or the server author must act. */
+  remediation: Remediation;
   title: string;
   /** What the probe actually observed. */
   observed: string;
@@ -39,6 +56,8 @@ export interface Rule {
   readonly title: string;
   /** Default severity; individual findings may override it. */
   readonly severity: Severity;
+  /** Whether an SDK upgrade fixes this, or the server author must act. */
+  readonly remediation: Remediation;
   /** Deep link into the specification. */
   readonly specRef: string;
   /** Which changelog entry this rule enforces, for traceability. */
@@ -57,6 +76,7 @@ export function finding(
     ruleId: rule.id,
     title: parts.title ?? rule.title,
     severity: parts.severity ?? rule.severity,
+    remediation: rule.remediation,
     specRef: rule.specRef,
     observed: parts.observed,
     expected: parts.expected,

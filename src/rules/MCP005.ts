@@ -13,6 +13,7 @@ const VALID_SCOPES = new Set(['public', 'private']);
 export const MCP005: Rule = {
   id: 'MCP005',
   title: 'List results are missing the required ttlMs and cacheScope fields',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('server/utilities/caching'),
   changelogRef: 'Minor change 5 (SEP-2549)',

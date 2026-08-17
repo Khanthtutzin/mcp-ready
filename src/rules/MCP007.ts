@@ -11,6 +11,7 @@ import type { Finding, Rule } from './types.js';
 export const MCP007: Rule = {
   id: 'MCP007',
   title: 'The removed logging/setLevel method is still implemented',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('server/utilities/logging'),
   changelogRef: 'Major change 5 (SEP-2575)',

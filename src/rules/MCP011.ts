@@ -12,6 +12,7 @@ import { finding, type Finding, type Rule } from './types.js';
 export const MCP011: Rule = {
   id: 'MCP011',
   title: 'Resource-not-found still returns the old -32002 error code',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('server/resources'),
   changelogRef: 'Minor change 6',

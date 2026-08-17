@@ -31,8 +31,20 @@ export function renderMarkdown(report: RunReport): string {
   lines.push('');
 
   if (errors.length) {
+    const sdk = errors.filter((f) => f.remediation === 'sdk').length;
+    const app = errors.length - sdk;
     lines.push('### Breaking');
     lines.push('');
+    if (sdk) {
+      lines.push(
+        `${sdk} of these ${sdk === 1 ? 'is' : 'are'} protocol plumbing owned by your MCP SDK — ` +
+          `upgrading to a release targeting ${report.targetRevision} resolves ` +
+          `${sdk === 1 ? 'it' : 'them'} with no change to your code. ` +
+          `${app === 0 ? 'None require' : `${app} require${app === 1 ? 's' : ''}`} ` +
+          'a change in the server itself.',
+      );
+      lines.push('');
+    }
     lines.push(...table(errors));
   }
 
@@ -62,9 +74,10 @@ export function renderMarkdown(report: RunReport): string {
 }
 
 function table(findings: RunReport['findings']): string[] {
-  const rows = ['| Rule | Issue |', '| --- | --- |'];
+  const rows = ['| Rule | Issue | Fixed by |', '| --- | --- | --- |'];
   for (const f of findings) {
-    rows.push(`| [${f.ruleId}](${f.specRef}) | ${escapePipes(f.title)} |`);
+    const owner = f.remediation === 'sdk' ? 'SDK upgrade' : 'your code';
+    rows.push(`| [${f.ruleId}](${f.specRef}) | ${escapePipes(f.title)} | ${owner} |`);
   }
   rows.push('');
   return rows;

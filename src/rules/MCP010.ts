@@ -11,6 +11,7 @@ import { finding, type Finding, type Rule } from './types.js';
 export const MCP010: Rule = {
   id: 'MCP010',
   title: 'The removed HTTP GET stream endpoint is still served',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/transports/streamable-http'),
   changelogRef: 'Major change 4 (SEP-2575)',

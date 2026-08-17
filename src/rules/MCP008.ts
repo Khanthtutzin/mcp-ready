@@ -13,6 +13,7 @@ const FIX =
 export const MCP008: Rule = {
   id: 'MCP008',
   title: 'The removed resources/subscribe methods are still implemented',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('server/resources'),
   changelogRef: 'Major change 4 (SEP-2575)',

@@ -14,6 +14,7 @@ const LIST_CHANGED_CAPS = ['tools', 'prompts', 'resources'] as const;
 export const MCP009: Rule = {
   id: 'MCP009',
   title: 'subscriptions/listen is missing despite advertised listChanged capabilities',
+  remediation: 'application',
   severity: 'error',
   specRef: specUrl('server/utilities/subscriptions'),
   changelogRef: 'Major change 4 (SEP-2575)',

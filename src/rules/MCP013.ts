@@ -15,6 +15,7 @@ import { describe, finding, type Finding, type Rule } from './types.js';
 export const MCP013: Rule = {
   id: 'MCP013',
   title: 'Server rejects requests carrying the _meta protocol envelope',
+  remediation: 'application',
   severity: 'error',
   specRef: specUrl('basic/index#meta'),
   changelogRef: 'Major change 2 (SEP-2575)',

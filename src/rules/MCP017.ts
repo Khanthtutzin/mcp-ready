@@ -25,6 +25,7 @@ function toolNames(result: Record<string, any> | undefined): string[] {
 export const MCP017: Rule = {
   id: 'MCP017',
   title: 'tools/list ordering is not deterministic',
+  remediation: 'application',
   severity: 'warning',
   specRef: specUrl('server/tools'),
   changelogRef: 'Minor change 3',

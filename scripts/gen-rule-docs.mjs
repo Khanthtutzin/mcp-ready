@@ -40,6 +40,7 @@ function extract(source, file) {
     id: pick(/\bid:\s*'([^']+)'/, 'id'),
     title: pick(/\btitle:\s*'([^']+)'/, 'title'),
     severity: pick(/\bseverity:\s*'([^']+)'/, 'severity'),
+    remediation: pick(/\bremediation:\s*'([^']+)'/, 'remediation'),
     specRef: `https://modelcontextprotocol.io/specification/${TARGET_REVISION}/${pick(
       /\bspecRef:\s*specUrl\('([^']+)'\)/,
       'specRef',
@@ -58,6 +59,11 @@ function page(rule) {
 |  |  |
 | --- | --- |
 | **Severity** | \`${rule.severity}\` |
+| **Fixed by** | ${
+    rule.remediation === 'sdk'
+      ? 'Upgrading your MCP SDK to a release targeting ' + TARGET_REVISION
+      : 'A change in your own server code'
+  } |
 | **Transports** | ${rule.appliesTo.map((t) => `\`${t}\``).join(', ')} |
 | **Specification** | [${TARGET_REVISION}](${rule.specRef}) |
 | **Changelog entry** | ${rule.changelogRef} |

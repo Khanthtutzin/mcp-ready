@@ -10,6 +10,7 @@ import type { Finding, Rule } from './types.js';
 export const MCP006: Rule = {
   id: 'MCP006',
   title: 'The removed ping method is still implemented',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/index'),
   changelogRef: 'Major change 5 (SEP-2575)',

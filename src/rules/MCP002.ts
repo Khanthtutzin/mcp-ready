@@ -14,6 +14,7 @@ import { describe, finding, type Finding, type Rule } from './types.js';
 export const MCP002: Rule = {
   id: 'MCP002',
   title: 'Server still requires the initialize handshake',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/lifecycle'),
   changelogRef: 'Major change 2 (SEP-2575)',

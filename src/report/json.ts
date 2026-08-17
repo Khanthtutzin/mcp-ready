@@ -17,10 +17,20 @@ export interface JsonReport {
   ready: boolean;
   /** Present only when the server never answered; no checks were run. */
   unreachable?: string;
-  summary: { checks: number; errors: number; warnings: number; crashed: number };
+  summary: {
+    checks: number;
+    errors: number;
+    warnings: number;
+    crashed: number;
+    /** Breaking findings an SDK upgrade resolves, with no change to your code. */
+    sdkErrors: number;
+    /** Breaking findings that need a change in the server itself. */
+    applicationErrors: number;
+  };
   findings: Array<{
     ruleId: string;
     severity: 'error' | 'warning';
+    remediation: 'sdk' | 'application';
     title: string;
     observed: string;
     expected: string;
@@ -48,10 +58,17 @@ export function toJsonReport(report: RunReport, version: string): JsonReport {
       errors: report.errorCount,
       warnings: report.warningCount,
       crashed: crashed.length,
+      sdkErrors: report.findings.filter(
+        (f) => f.severity === 'error' && f.remediation === 'sdk',
+      ).length,
+      applicationErrors: report.findings.filter(
+        (f) => f.severity === 'error' && f.remediation === 'application',
+      ).length,
     },
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
       severity: f.severity,
+      remediation: f.remediation,
       title: f.title,
       observed: f.observed,
       expected: f.expected,

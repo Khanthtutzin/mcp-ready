@@ -25,7 +25,13 @@ export {
   type Prelude,
 } from './probe/context.js';
 export { ALL_RULES, rulesFor, ruleById } from './rules/index.js';
-export type { Rule, Finding, Severity, TransportKind } from './rules/types.js';
+export type {
+  Rule,
+  Finding,
+  Severity,
+  Remediation,
+  TransportKind,
+} from './rules/types.js';
 export { renderTerminal } from './report/terminal.js';
 export { renderJson, toJsonReport, type JsonReport } from './report/json.js';
 export { renderSarif } from './report/sarif.js';

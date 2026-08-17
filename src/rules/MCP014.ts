@@ -14,6 +14,7 @@ import { describe, finding, type Finding, type Rule } from './types.js';
 export const MCP014: Rule = {
   id: 'MCP014',
   title: 'Server rejects the required Mcp-Method and Mcp-Name headers',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/transports/streamable-http'),
   changelogRef: 'Minor change 4 (SEP-2243)',

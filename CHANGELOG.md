@@ -11,6 +11,30 @@ silently start suppressing a different check.
 
 ## [Unreleased]
 
+### Added
+
+- Every rule now declares `remediation: 'sdk' | 'application'` — whether an SDK
+  upgrade resolves the finding or the server author has to act. The terminal,
+  JSON and Markdown reports split their summaries on that line. Against a
+  stock-SDK server the great majority of findings are SDK plumbing, and saying
+  so keeps maintainers from hunting through code they did not write.
+- Regression coverage for Windows executable resolution and `cmd.exe` argument
+  quoting (`test/spawn-plan.test.ts`).
+
+### Fixed
+
+- **Windows: `--stdio "npx ..."` failed with `spawn npx ENOENT`.** `npx` is a
+  `.cmd` shim on Windows, which Node cannot resolve without `shell: true` and,
+  since the fix for CVE-2024-27980, refuses to spawn directly. `mcp-ready` now
+  resolves the executable itself through `PATHEXT` and routes batch shims via
+  `cmd.exe` with arguments it quotes, keeping `shell: true` off so command
+  metacharacters are still never interpreted. This made the tool unusable on
+  Windows for most of the ecosystem, including the exact `npx` invocation the
+  README documents.
+- **`--no-color` was documented but rejected by the argument parser.**
+  `node:util.parseArgs` has no `--no-` negation, so the flag had to be declared
+  explicitly. The `NO_COLOR` environment variable is now honoured too.
+
 ## [0.1.0] — 2026-08-17
 
 Initial release. Checks a live MCP server against revision

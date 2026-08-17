@@ -44,12 +44,18 @@ describe('reporters', () => {
         'expected',
         'fix',
         'observed',
+        'remediation',
         'ruleId',
         'severity',
         'specRef',
         'title',
       ]);
     }
+    // The two buckets must account for every breaking finding, or the summary
+    // line in the terminal report is lying to the reader.
+    expect(json.summary.sdkErrors + json.summary.applicationErrors).toBe(
+      json.summary.errors,
+    );
     // Must survive a round trip: the shape is a public contract.
     expect(JSON.parse(renderJson(report, '1.2.3'))).toEqual(json);
   });
@@ -79,7 +85,22 @@ describe('reporters', () => {
 
     expect(md).toContain('## mcp-ready');
     expect(md).toContain('**Not ready.**');
-    expect(md).toContain('| Rule | Issue |');
+    expect(md).toContain('| Rule | Issue | Fixed by |');
     expect(md).toContain('<details>');
+  });
+
+  it('attributes findings to the SDK or to the server author', async () => {
+    // Against a stock-SDK server nearly everything is SDK plumbing. Saying so
+    // is the difference between an actionable report and a wall of blame.
+    const report = await checkStdio('legacy');
+    const text = renderTerminal(report, { color: false });
+
+    expect(text).toContain('owned by your MCP SDK');
+    expect(text).toMatch(/need(s)? a change in your server: /);
+    expect(text).toContain('(SDK)');
+
+    const md = renderMarkdown(report);
+    expect(md).toContain('SDK upgrade');
+    expect(md).toContain('your code');
   });
 });

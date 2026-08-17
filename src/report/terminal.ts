@@ -83,6 +83,12 @@ export function renderTerminal(report: RunReport, options: TerminalOptions = {})
     lines.push('');
   }
 
+  // Split the verdict by who has to act. Against a stock SDK server almost
+  // everything lands on the left of this line, and saying so up front stops a
+  // maintainer hunting through code they did not write.
+  const sdkErrors = errors.filter((f) => f.remediation === 'sdk').length;
+  const appErrors = errors.length - sdkErrors;
+
   const checked = report.outcomes.length;
   if (report.ready) {
     const suffix = warnings.length
@@ -95,6 +101,26 @@ export function renderTerminal(report: RunReport, options: TerminalOptions = {})
     lines.push(
       `${c.red('NOT READY')} — ${errors.length} breaking issue${errors.length === 1 ? '' : 's'} ` +
         `across ${checked} checks.`,
+    );
+    if (sdkErrors) {
+      lines.push(
+        c.dim(
+          `  ${sdkErrors} of those are protocol plumbing owned by your MCP SDK — ` +
+            'upgrading to a release that targets ' +
+            `${report.targetRevision} resolves them with no change to your code.`,
+        ),
+      );
+    }
+    lines.push(
+      c.dim(
+        appErrors
+          ? `  ${appErrors} need${appErrors === 1 ? 's' : ''} a change in your server: ` +
+              errors
+                .filter((f) => f.remediation === 'application')
+                .map((f) => f.ruleId)
+                .join(', ')
+          : '  None require a change to your own code.',
+      ),
     );
   }
   lines.push(c.dim(`Finished in ${report.durationMs}ms.`));
@@ -109,8 +135,9 @@ function renderFinding(
   verbose: boolean,
 ): string[] {
   const badge = f.severity === 'error' ? c.red('×') : c.yellow('!');
+  const owner = f.remediation === 'sdk' ? c.dim(' (SDK)') : '';
   const out = [
-    `  ${badge} ${c.bold(f.ruleId)}  ${f.title}`,
+    `  ${badge} ${c.bold(f.ruleId)}  ${f.title}${owner}`,
     `      ${c.dim('found')}     ${f.observed}`,
     `      ${c.dim('expected')}  ${f.expected}`,
     `      ${c.dim('fix')}       ${f.fix}`,

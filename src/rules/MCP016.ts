@@ -13,6 +13,7 @@ import { finding, type Finding, type Rule } from './types.js';
 export const MCP016: Rule = {
   id: 'MCP016',
   title: 'Deprecated HTTP+SSE transport detected',
+  remediation: 'sdk',
   severity: 'warning',
   specRef: specUrl('basic/transports/streamable-http'),
   changelogRef: 'Deprecated 2 (SEP-2596)',

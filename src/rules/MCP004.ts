@@ -20,6 +20,7 @@ const VALID = new Set(['complete', 'input_required']);
 export const MCP004: Rule = {
   id: 'MCP004',
   title: 'Results are missing the required resultType field',
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('basic/patterns/mrtr'),
   changelogRef: 'Major change 8 (SEP-2322)',
