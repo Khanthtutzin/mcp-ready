@@ -118,7 +118,10 @@ export async function main(argv: string[]): Promise<number> {
         format: { type: 'string', default: 'text' },
         output: { type: 'string' },
         verbose: { type: 'boolean', default: false },
+        // `node:util.parseArgs` has no notion of `--no-x` negation, so the
+        // documented `--no-color` has to be its own option.
         color: { type: 'boolean', default: true },
+        'no-color': { type: 'boolean', default: false },
         only: { type: 'string' },
         skip: { type: 'string' },
         timeout: { type: 'string' },
@@ -211,7 +214,13 @@ export async function main(argv: string[]): Promise<number> {
         break;
       default:
         output = renderTerminal(report, {
-          color: opts.color !== false && process.stdout.isTTY === true,
+          // Honour --no-color and the NO_COLOR convention, and never emit
+          // escapes when stdout is redirected to a file or a pipe.
+          color:
+            !opts['no-color'] &&
+            opts.color !== false &&
+            !process.env['NO_COLOR'] &&
+            process.stdout.isTTY === true,
           verbose: opts.verbose,
         });
     }

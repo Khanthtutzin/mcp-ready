@@ -1,4 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
+import { planSpawn } from './spawn-plan.js';
 import type {
   Exchange,
   JsonRpcRequest,
@@ -112,16 +113,20 @@ export class StdioTransport implements Transport {
     if (this.child) return this.child;
 
     const argv = tokenizeCommand(this.command);
-    const bin = argv[0];
-    if (!bin) throw new Error('Empty --stdio command.');
+    if (!argv[0]) throw new Error('Empty --stdio command.');
 
-    const child = spawn(bin, argv.slice(1), {
+    // Never `shell: true` — that would reinterpret metacharacters in a
+    // user-supplied command. `planSpawn` resolves the executable itself and
+    // routes Windows batch shims (`npx.cmd` and friends) through cmd.exe with
+    // arguments we quote. See src/transport/spawn-plan.ts.
+    const plan = planSpawn(argv);
+    if (plan.note) this.notes.push(`[spawn] ${plan.note}`);
+
+    const child = spawn(plan.file, plan.args, {
       cwd: this.cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
-      // `shell: false` keeps argv semantics identical across platforms, but on
-      // Windows `node`/`npx` resolve through `.cmd` shims, so allow the shim
-      // lookup that Node performs for us.
+      windowsVerbatimArguments: plan.windowsVerbatimArguments,
       windowsHide: true,
     }) as ChildProcessWithoutNullStreams;
 

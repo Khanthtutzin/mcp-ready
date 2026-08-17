@@ -1,0 +1,4 @@
+#!/bin/sh
+# Stands in for npm's extensionless POSIX shim. Windows cannot execute this,
+# but a bare-name PATH lookup finds it — which is the bug this guards.
+echo "posix shim"
