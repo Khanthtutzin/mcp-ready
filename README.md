@@ -202,6 +202,13 @@ If you find a case where a rule is wrong, that is a bug, and it is the most
 useful thing you can report. Please
 [open an issue](https://github.com/Khanthtutzin/mcp-stateless/issues/new?template=false-positive.yml).
 
+## A worked example
+
+[**docs/migration-walkthrough.md**](docs/migration-walkthrough.md) takes a real
+server from 7 breaking findings to READY: the full report, what each finding
+means, the actual diff, and an honest account of what the tool got wrong and
+what it still cannot tell you.
+
 ## In CI
 
 As a GitHub Action:

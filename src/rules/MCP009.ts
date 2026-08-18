@@ -14,7 +14,13 @@ const LIST_CHANGED_CAPS = ['tools', 'prompts', 'resources'] as const;
 export const MCP009: Rule = {
   id: 'MCP009',
   title: 'subscriptions/listen is missing despite advertised listChanged capabilities',
-  remediation: 'application',
+  // Empirically 'sdk': migrating the notes server in docs/migration-walkthrough.md
+  // cleared this with no application change, because the v2 SDK implements
+  // subscriptions/listen while still defaulting tools.listChanged to true. The
+  // capability is nominally the author's declaration, but the promise is kept
+  // by the framework, so attributing it to the author sent people looking at
+  // code that was never the problem.
+  remediation: 'sdk',
   severity: 'error',
   specRef: specUrl('server/utilities/subscriptions'),
   changelogRef: 'Major change 4 (SEP-2575)',
@@ -29,7 +35,8 @@ export const MCP009: Rule = {
     // pass, not a failure. Only an explicit method-not-found is conclusive.
     const ex = await ctx.call(
       'subscriptions/listen',
-      { subscribe: { toolsListChanged: true } },
+      // Field name and shape per SubscriptionFilter in the 2026-07-28 schema.
+      { notifications: { toolsListChanged: true } },
       { timeoutMs: 2500 },
     );
 

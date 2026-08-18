@@ -96,11 +96,21 @@ describe('reporters', () => {
     const text = renderTerminal(report, { color: false });
 
     expect(text).toContain('owned by your MCP SDK');
-    expect(text).toMatch(/need(s)? a change in your server: /);
     expect(text).toContain('(SDK)');
+    // Every breaking finding on the legacy fixture is SDK plumbing, so the
+    // summary must say so rather than imply work the maintainer cannot do.
+    expect(text).toContain('None require a change to your own code.');
 
     const md = renderMarkdown(report);
     expect(md).toContain('SDK upgrade');
     expect(md).toContain('your code');
+  });
+
+  it('names the rules that genuinely need an application change', async () => {
+    // MCP013 (the server rejecting the _meta envelope) is a real application
+    // fault, so this fixture must exercise the other branch of the summary.
+    const report = await checkStdio('strict-params');
+    const text = renderTerminal(report, { color: false });
+    expect(text).toMatch(/need(s)? a change in your server: .*MCP013/);
   });
 });
