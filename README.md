@@ -1,19 +1,24 @@
+<div align="center">
+
 # mcp-stateless
 
 **Is your MCP server ready for the 2026-07-28 stateless specification?**
 
 [![CI](https://github.com/Khanthtutzin/mcp-stateless/actions/workflows/ci.yml/badge.svg)](https://github.com/Khanthtutzin/mcp-stateless/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/mcp-stateless.svg)](https://www.npmjs.com/package/mcp-stateless)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
+[![npm](https://img.shields.io/npm/v/mcp-stateless?color=cb3837&logo=npm)](https://www.npmjs.com/package/mcp-stateless)
+[![runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen)](package.json)
+[![node](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](package.json)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-`mcp-stateless` connects to a running MCP server, probes what it actually does, and
-tells you exactly which parts of the 2026-07-28 breaking changes it fails —
-with the wire traffic that proves it and the specific change that fixes it.
+Connects to a running MCP server, probes what it actually does, and tells you
+exactly which of the 2026-07-28 breaking changes it fails — with the wire
+traffic that proves it and the specific change that fixes it.
 
 ```bash
 npx mcp-stateless --stdio "node dist/server.js"
 ```
+
+</div>
 
 ---
 
@@ -22,41 +27,41 @@ npx mcp-stateless --stdio "node dist/server.js"
 MCP revision [`2026-07-28`](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 is the largest breaking change in the protocol's history. **MCP went stateless.**
 
-- The `initialize` / `notifications/initialized` handshake was **removed**
-- `Mcp-Session-Id` and protocol-level sessions were **removed**
-- `ping`, `logging/setLevel`, `resources/subscribe` were **removed**
-- `server/discover` is now **mandatory**
-- Every result must carry `resultType`
-- List results must carry `ttlMs` and `cacheScope`
-- Server-initiated requests were replaced by Multi Round-Trip Requests
-- Protocol error codes were renumbered
-- SSE stream resumability was removed
+| Removed                                | Added                                  |
+| -------------------------------------- | -------------------------------------- |
+| `initialize` handshake                 | `server/discover` (mandatory)          |
+| `Mcp-Session-Id` and protocol sessions | Per-request `_meta` envelope           |
+| `ping`, `logging/setLevel`             | `resultType` on every result           |
+| `resources/subscribe` / `unsubscribe`  | `ttlMs` / `cacheScope` on list results |
+| Server-initiated requests              | Multi Round-Trip Requests              |
+| SSE stream resumability                | Renumbered protocol error codes        |
 
-Thousands of servers now need to migrate on a twelve-month deprecation clock.
+Every MCP server must migrate, on a twelve-month deprecation clock.
 
 The official [`@modelcontextprotocol/codemod`](https://www.npmjs.com/package/@modelcontextprotocol/codemod)
 rewrites the v1→v2 **SDK API surface** — imports, symbol renames, handler
-signatures. It explicitly stops there; in its own words, adopting the 2026-07-28
-protocol revision "is architectural and not codemod-automatable".
+signatures — and explicitly stops there. In its own words, adopting the
+2026-07-28 protocol revision "is architectural and not codemod-automatable".
 
-That leaves the question the codemod cannot answer: _does the server I am now
-running actually conform?_ Static rewriting cannot tell you. `mcp-stateless` answers
-it by asking the server itself.
+That leaves the question static rewriting cannot answer: **does the server I am
+now running actually conform?** This asks the server itself.
 
 ## Quick start
 
 No installation required.
 
 ```bash
-# stdio server
+# stdio
 npx mcp-stateless --stdio "node dist/server.js"
 
-# Streamable HTTP server
+# Streamable HTTP
 npx mcp-stateless --http https://api.example.com/mcp
 
 # with authentication
 npx mcp-stateless --http https://api.example.com/mcp --header "Authorization: Bearer $TOKEN"
 ```
+
+Exit `0` ready · `1` findings · `2` usage error or unreachable server.
 
 ## What a run looks like
 
@@ -64,69 +69,100 @@ npx mcp-stateless --http https://api.example.com/mcp --header "Authorization: Be
 mcp-stateless — checking against MCP 2026-07-28
 target: node dist/server.js (stdio)
 
-Breaking (5)
+Breaking (7)
 
-  × MCP001  server/discover is not implemented
-      found     server/discover returned JSON-RPC error -32600: Server not initialized.
+  × MCP001  server/discover is not implemented (SDK)
+      found     server/discover returned JSON-RPC error -32601: Method not found.
       expected  Servers MUST implement server/discover, advertising supported protocol
                 versions, capabilities and identity.
-      fix       Add a server/discover handler returning { supportedVersions,
-                capabilities }. Current SDKs implement this for you once upgraded.
+      fix       Add a server/discover handler returning { supportedVersions, capabilities },
+                with identity in _meta. Current SDKs implement this for you once upgraded.
       spec      https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle
 
-  × MCP002  Server still requires the initialize handshake
-      found     tools/list without a handshake returned JSON-RPC error -32600, but the
-                same call succeeded after initialize. The server is still stateful.
-      expected  Every request stands alone. Servers MUST serve tools/list with no prior
-                handshake, reading version and capabilities from each request's _meta.
-      fix       Remove the initialization gate from your request handling. Read
-                io.modelcontextprotocol/protocolVersion from params._meta on each request
-                instead of from stored session state.
-      spec      https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle
+  × MCP004  Results are missing the required resultType field (SDK)
+  × MCP006  The removed ping method is still implemented (SDK)
+  × MCP009  subscriptions/listen is missing despite advertised listChanged (SDK)
+  …
 
-  × MCP011  Resource-not-found still returns the old -32002 error code
-      found     resources/read on an unknown URI returned error -32002.
-      expected  Resource-not-found is reported as -32602 (Invalid Params), per JSON-RPC.
-      fix       Change the resource-not-found error code from -32002 to -32602.
-      spec      https://modelcontextprotocol.io/specification/2026-07-28/server/resources
-
-Deprecations and advisories (4)
-
-  ! MCP017  tools/list ordering is not deterministic
-      found     Two consecutive tools/list calls returned the same tools in different
-                orders: [alpha, beta] then [beta, alpha].
-      expected  Servers SHOULD return tools in a deterministic order, so clients can cache
-                listings and LLM prompt caches keep hitting.
-      fix       Sort the tool list before returning it, or build it from an ordered
-                structure rather than iterating a map or set.
-      spec      https://modelcontextprotocol.io/specification/2026-07-28/server/tools
-
-NOT READY — 5 breaking issues across 14 checks.
-  4 of those are protocol plumbing owned by your MCP SDK — upgrading to a release
+NOT READY — 7 breaking issues across 14 checks.
+  7 of those are protocol plumbing owned by your MCP SDK — upgrading to a release
   that targets 2026-07-28 resolves them with no change to your code.
-  1 needs a change in your server: MCP009
-Finished in 64ms.
+  None require a change to your own code.
 ```
 
-Add `--verbose` to see the JSON-RPC exchange behind each finding.
+`--verbose` adds the JSON-RPC exchange behind each finding.
 
-### The SDK line matters
+> ### The SDK line is the point
+>
+> Most of what breaks is plumbing your SDK owns — you never wrote a `ping`
+> handler, the SDK registered one. Telling you to delete it would send you
+> hunting through code you do not maintain.
+>
+> So every rule declares **who fixes it**, and the summary splits on that line.
+> Seven findings can mean zero work for you and one SDK upgrade. Knowing which
+> is worth more than the list above it.
 
-Most of what breaks is protocol plumbing your MCP SDK owns — you never wrote a
-`ping` handler, the SDK registered one. Telling you to go delete it would send
-you hunting through code you do not maintain.
+## Proven against real servers
 
-So every rule declares who fixes it, and the summary splits on that line. In
-practice, against a server built on an SDK, the great majority of findings clear
-themselves the day you upgrade — and the short list that remains is the part
-actually worth your afternoon.
+Fixtures prove the rules against servers built to trip them. That is necessary
+but not sufficient, so this is also run against real software.
+
+**Unmigrated** — the official `@modelcontextprotocol/*` servers:
+
+| Server                       | Breaking | Advisory |
+| ---------------------------- | -------- | -------- |
+| `server-everything`          | 10       | 2        |
+| `server-memory`              | 9        | 1        |
+| `server-filesystem`          | 7        | 1        |
+| `server-sequential-thinking` | 7        | 1        |
+
+**Migrated** — the TypeScript SDK at `2.0.0-alpha.0`, built from source:
+
+| Example              | Transport | Verdict                    |
+| -------------------- | --------- | -------------------------- |
+| `server-quickstart`  | stdio     | READY, no findings         |
+| `caching` (dual-era) | http      | READY, 1 dual-era advisory |
+
+<details>
+<summary><b>Testing against the migrated SDK found five defects in this tool</b></summary>
+
+<br>
+
+Every one produced a false result against a correctly migrated server, and none
+would have surfaced from the fixture suite — the fixtures encoded the same
+assumptions as the rules.
+
+- The HTTP transport never sent the required `MCP-Protocol-Version` header, so
+  a real v2 server rejected every probe and **seven rules fired spuriously**
+- `server/discover` was checked for `protocolVersions`; the schema field is
+  `supportedVersions`
+- `serverInfo` was expected at the top level of `DiscoverResult`, where the
+  schema does not define it
+- A **dual-era** server — the SDK's own recommended migration path — was
+  reported NOT READY
+- `MCP009` blamed the server author for something only an SDK upgrade fixes
+
+All fixed, all covered by regression tests. If a rule fires on a server you
+believe is correct, that is a bug and the most useful thing you can report.
+
+</details>
+
+## A worked example
+
+[**docs/migration-walkthrough.md**](docs/migration-walkthrough.md) takes a real
+server from 7 breaking findings to READY: the full report, what every finding
+means, the actual diff, and an honest account of what the tool got wrong and
+what it still cannot tell you.
 
 ## What it checks
 
-18 rules, each tied to a specific changelog entry. Full details in
+**18 rules**, each tied to a named changelog entry and SEP. Full detail in
 [`docs/rules/`](docs/rules/README.md).
 
-### Breaking
+<details>
+<summary><b>Breaking — 14 rules</b></summary>
+
+<br>
 
 | Rule                           | Check                                                  | Transports  | Fixed by    |
 | ------------------------------ | ------------------------------------------------------ | ----------- | ----------- |
@@ -138,14 +174,19 @@ actually worth your afternoon.
 | [MCP006](docs/rules/MCP006.md) | Removed `ping` still implemented                       | stdio, http | SDK upgrade |
 | [MCP007](docs/rules/MCP007.md) | Removed `logging/setLevel` still implemented           | stdio, http | SDK upgrade |
 | [MCP008](docs/rules/MCP008.md) | Removed `resources/subscribe` still implemented        | stdio, http | SDK upgrade |
-| [MCP009](docs/rules/MCP009.md) | `subscriptions/listen` missing despite `listChanged`   | stdio, http | your code   |
+| [MCP009](docs/rules/MCP009.md) | `subscriptions/listen` missing despite `listChanged`   | stdio, http | SDK upgrade |
 | [MCP010](docs/rules/MCP010.md) | Removed HTTP GET stream endpoint still served          | http        | SDK upgrade |
 | [MCP011](docs/rules/MCP011.md) | Resource-not-found still returns `-32002`              | stdio, http | SDK upgrade |
 | [MCP012](docs/rules/MCP012.md) | Protocol error codes not renumbered                    | stdio, http | SDK upgrade |
 | [MCP013](docs/rules/MCP013.md) | Rejects requests carrying the `_meta` envelope         | stdio, http | your code   |
 | [MCP014](docs/rules/MCP014.md) | Rejects the required `Mcp-Method` / `Mcp-Name` headers | http        | SDK upgrade |
 
-### Deprecations and advisories
+</details>
+
+<details>
+<summary><b>Deprecations and advisories — 4 rules</b></summary>
+
+<br>
 
 | Rule                           | Check                                          | Transports  | Fixed by    |
 | ------------------------------ | ---------------------------------------------- | ----------- | ----------- |
@@ -154,83 +195,51 @@ actually worth your afternoon.
 | [MCP017](docs/rules/MCP017.md) | `tools/list` ordering not deterministic        | stdio, http | your code   |
 | [MCP018](docs/rules/MCP018.md) | Results do not identify the server via `_meta` | stdio, http | SDK upgrade |
 
-### Deliberately not covered yet
+</details>
 
-Some 2026-07-28 changes need an auth flow or an interactive scenario to probe
-honestly, so they are tracked as issues rather than checked unreliably: Multi
-Round-Trip Request conformance, the tasks-extension migration, RFC 9207 `iss`
-validation, and Client ID Metadata Documents. See
-[the catalogue](docs/rules/README.md#not-yet-covered).
+<details>
+<summary><b>Deliberately not covered yet</b></summary>
 
-## Tested against real servers
+<br>
 
-The fixture suite proves the rules against servers written to trip them. That is
-necessary but not sufficient, so `mcp-stateless` is also run against real software.
+Some changes need an auth flow or an interactive scenario to probe honestly.
+Checking them unreliably would be worse than not checking them, so they are
+tracked as issues instead:
 
-**Pre-2026 servers** — the official `@modelcontextprotocol/*` servers, none of
-which has migrated:
+- [#1](https://github.com/Khanthtutzin/mcp-stateless/issues/1) Multi Round-Trip Request conformance — SEP-2322
+- [#2](https://github.com/Khanthtutzin/mcp-stateless/issues/2) Tasks extension migration — SEP-2663
+- [#3](https://github.com/Khanthtutzin/mcp-stateless/issues/3) RFC 9207 `iss` validation — SEP-2468
+- [#4](https://github.com/Khanthtutzin/mcp-stateless/issues/4) Client ID Metadata Documents
 
-| Server                       | Breaking | Advisory |
-| ---------------------------- | -------- | -------- |
-| `server-everything`          | 10       | 2        |
-| `server-memory`              | 9        | 1        |
-| `server-filesystem`          | 7        | 1        |
-| `server-sequential-thinking` | 7        | 1        |
+It also never calls a tool — tools have side effects. It checks the protocol
+envelope, not your logic.
 
-**A migrated server** — the TypeScript SDK at `2.0.0-alpha.0`, built from source,
-over both transports:
-
-| Example              | Transport | Verdict                    |
-| -------------------- | --------- | -------------------------- |
-| `server-quickstart`  | stdio     | READY, no findings         |
-| `caching` (dual-era) | http      | READY, 1 dual-era advisory |
-
-Testing against the migrated SDK is what made the rules trustworthy. It found
-four defects in `mcp-stateless` itself, all now fixed and covered by regression
-tests:
-
-- the HTTP transport never sent the required `MCP-Protocol-Version` header, so
-  a real v2 server rejected every probe and seven rules fired spuriously
-- `server/discover` was checked for `protocolVersions`; the schema field is
-  `supportedVersions`
-- `serverInfo` was expected at the top level of `DiscoverResult`, where the
-  schema does not define it
-- a **dual-era** server — the SDK's own recommended migration path — was
-  reported NOT READY for still answering `initialize`
-
-If you find a case where a rule is wrong, that is a bug, and it is the most
-useful thing you can report. Please
-[open an issue](https://github.com/Khanthtutzin/mcp-stateless/issues/new?template=false-positive.yml).
-
-## A worked example
-
-[**docs/migration-walkthrough.md**](docs/migration-walkthrough.md) takes a real
-server from 7 breaking findings to READY: the full report, what each finding
-means, the actual diff, and an honest account of what the tool got wrong and
-what it still cannot tell you.
+</details>
 
 ## In CI
-
-As a GitHub Action:
 
 ```yaml
 - uses: Khanthtutzin/mcp-stateless@v1
   with:
     stdio: node dist/server.js
+    fail-on: error
 ```
 
 Or upload SARIF so findings appear in the Security tab and inline on pull
 requests:
 
 ```yaml
-- run: npx mcp-stateless --stdio "node dist/server.js" --format sarif --output mcp-stateless.sarif
+- run: npx mcp-stateless --stdio "node dist/server.js" --format sarif --output results.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: mcp-stateless.sarif
+    sarif_file: results.sarif
 ```
 
-## Options
+<details>
+<summary><b>All CLI options</b></summary>
+
+<br>
 
 ```
 --stdio <command>     Command that starts the server on stdio.
@@ -241,7 +250,7 @@ requests:
 --format <fmt>        text (default), json, sarif, markdown.
 --output <file>       Write the report to a file instead of stdout.
 --verbose             Include the JSON-RPC traffic behind each finding.
---no-color            Disable ANSI colour.
+--no-color            Disable ANSI colour (NO_COLOR is honoured too).
 
 --only <ids>          Comma-separated rule ids to run exclusively.
 --skip <ids>          Comma-separated rule ids to skip.
@@ -252,14 +261,16 @@ requests:
 --version, --help
 ```
 
-**Exit codes:** `0` ready · `1` findings at or above `--fail-on` · `2` usage
-error or unreachable server.
+A server that never answers is reported `UNREACHABLE` with **no findings at
+all** — eighteen confident verdicts about a server that failed to start would be
+worse than nothing.
 
-A server that never answers is reported as `UNREACHABLE` with no findings
-at all — eighteen confident verdicts about a server that failed to start
-would be worse than nothing.
+</details>
 
-## Programmatic use
+<details>
+<summary><b>Programmatic use</b></summary>
+
+<br>
 
 ```ts
 import { runChecks, StdioTransport } from 'mcp-stateless';
@@ -268,17 +279,18 @@ const transport = new StdioTransport('node dist/server.js');
 const report = await runChecks(transport);
 await transport.close();
 
-if (!report.ready) {
-  for (const f of report.findings) {
-    console.log(`${f.ruleId} ${f.severity}: ${f.title}\n  fix: ${f.fix}`);
-  }
+for (const f of report.findings) {
+  console.log(`${f.ruleId} ${f.severity} [${f.remediation}] ${f.title}`);
+  console.log(`  fix: ${f.fix}`);
 }
 ```
 
+</details>
+
 ## How it works
 
-`mcp-stateless` speaks **both** protocol revisions. It hand-rolls JSON-RPC rather
-than using an MCP SDK, because an SDK abstracts away exactly what needs
+`mcp-stateless` speaks **both** protocol revisions. It hand-rolls JSON-RPC
+rather than using an MCP SDK, because an SDK abstracts away precisely what needs
 observing — it performs the handshake for you and normalises errors.
 
 The probe runs a fixed opening sequence whose ordering is load-bearing:
@@ -286,28 +298,34 @@ The probe runs a fixed opening sequence whose ordering is load-bearing:
 1. `server/discover` — mandatory now, harmless against a legacy server
 2. `tools/list` **before any handshake** — on stdio a successful `initialize`
    would persist in the child process and mask a server that still requires it
-3. legacy `initialize` — expected to fail on a compliant server
+3. Legacy `initialize` — expected to fail on a compliant server
 4. `tools/list` again, only if step 2 failed and step 3 worked
 
 That combination is the signature of a still-stateful server, and it is what
-lets the tool distinguish "requires the handshake" from "chokes on `_meta`"
-from "rejects the routing headers" — three failures that look identical from
-the outside.
+separates "requires the handshake" from "chokes on `_meta`" from "rejects the
+routing headers" — three failures that look identical from outside.
 
-**Zero runtime dependencies.** Argument parsing uses `node:util.parseArgs`,
-HTTP uses the built-in `fetch`, and the terminal colours are twelve lines of
-ANSI. Nothing is installed into your CI beyond this package.
+**Zero runtime dependencies.** Argument parsing uses `node:util.parseArgs`, HTTP
+uses the built-in `fetch`, and the terminal colours are twelve lines of ANSI.
+Nothing is installed into your CI beyond this package.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full map.
 
 ## Contributing
 
-Adding a rule is one file plus one test — rules never touch the transport
-layer, only a shared `ProbeContext`. See [CONTRIBUTING.md](CONTRIBUTING.md),
-and the [`good first issue`](https://github.com/Khanthtutzin/mcp-stateless/labels/good%20first%20issue)
+Adding a rule is **one file plus one test** — rules never touch the transport
+layer, only a shared `ProbeContext`. See [CONTRIBUTING.md](CONTRIBUTING.md) and
+the [`good first issue`](https://github.com/Khanthtutzin/mcp-stateless/labels/good%20first%20issue)
 label.
 
-The test suite runs every rule against real fixture MCP servers over real
-stdio and real HTTP — one deliberately built to 2025-11-25, one to 2026-07-28.
-No mocks.
+The suite runs every rule against real fixture MCP servers over real stdio and
+real HTTP — one built to 2025-11-25, one to 2026-07-28, plus servers that fail
+in specific ways. No mocks.
+
+```bash
+git clone https://github.com/Khanthtutzin/mcp-stateless.git
+cd mcp-stateless && npm install && npm test
+```
 
 ## License
 

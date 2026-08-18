@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # Only devDependencies exist here — the published package has zero runtime
+  # dependencies and that is an invariant worth keeping. Grouped so routine
+  # bumps arrive as one reviewable PR rather than five.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        patterns: ['*']
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
