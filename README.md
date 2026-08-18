@@ -8,6 +8,7 @@
 [![npm](https://img.shields.io/npm/v/mcp-stateless?color=cb3837&logo=npm)](https://www.npmjs.com/package/mcp-stateless)
 [![runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen)](package.json)
 [![node](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](package.json)
+[![provenance](https://img.shields.io/badge/provenance-signed-6f42c1?logo=github)](https://www.npmjs.com/package/mcp-stateless#provenance)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Connects to a running MCP server, probes what it actually does, and tells you
@@ -62,6 +63,15 @@ npx mcp-stateless --http https://api.example.com/mcp --header "Authorization: Be
 ```
 
 Exit `0` ready · `1` findings · `2` usage error or unreachable server.
+
+Every release is published from CI by npm
+[trusted publishing](https://docs.npmjs.com/trusted-publishers/), so each
+version carries a signed SLSA provenance attestation tying it to the exact
+workflow run and commit that built it. No publish token exists. Verify with:
+
+```bash
+npm audit signatures
+```
 
 ## What a run looks like
 

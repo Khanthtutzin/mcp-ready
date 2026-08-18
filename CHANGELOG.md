@@ -11,51 +11,94 @@ silently start suppressing a different check.
 
 ## [Unreleased]
 
-### Added
+## [0.1.5] — 2026-08-18
 
-- Every rule now declares `remediation: 'sdk' | 'application'` — whether an SDK
-  upgrade resolves the finding or the server author has to act. The terminal,
-  JSON and Markdown reports split their summaries on that line. Against a
-  stock-SDK server the great majority of findings are SDK plumbing, and saying
-  so keeps maintainers from hunting through code they did not write.
-- Regression coverage for Windows executable resolution and `cmd.exe` argument
-  quoting (`test/spawn-plan.test.ts`).
+First release published entirely by CI. No version-visible changes: cut to
+confirm the trusted-publishing pipeline is repeatable rather than a one-off.
+
+## [0.1.4] — 2026-08-18
+
+### Changed
+
+- Releases now publish through npm **trusted publishing** (OIDC), so every
+  version from here carries a signed SLSA provenance attestation binding it to
+  the workflow and commit that built it. No token exists to leak or rotate.
 
 ### Fixed
 
-Four defects found by building the TypeScript SDK at `2.0.0-alpha.0` from source
-and running the checker against its examples over both transports. Every one
-produced a false finding against a correctly migrated server.
+- `setup-node`'s `registry-url` wrote an `.npmrc` containing
+  `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With the token removed
+  for OIDC, that left a configured-but-empty credential, and npm reads any
+  configured credential as "auth is handled" — it never attempted the OIDC
+  exchange. Removing `registry-url` was necessary but not sufficient: the
+  trusted publisher record had also never saved, because the first attempt was
+  made from a browser session predating 2FA and npm rejected it silently.
 
-- **The HTTP transport never sent `MCP-Protocol-Version`.** SEP-2243 requires it
-  on every modern Streamable HTTP POST. A real v2 server rejected every probe
-  with `-32020` and seven rules fired spuriously. The header is now mirrored
-  from the request's `_meta` envelope rather than hardcoded, so a rule that
-  deliberately sends an unsupported version still reaches the version-rejection
-  path it is testing instead of tripping HeaderMismatch.
-- **MCP001 checked `protocolVersions`.** The `DiscoverResult` field is
-  `supportedVersions`. Verified against the published schema, not inferred.
-- **MCP001 expected `serverInfo` at the top level of `DiscoverResult`.** The
-  schema has no such member; identity lives in `_meta`, which MCP018 already
-  covers. The duplicate check is gone.
-- **MCP002 reported dual-era servers as NOT READY.** A server that answers
-  `server/discover` and still handles `initialize` is serving both eras — the
-  migration path the SDK documents as the recommended first step. It is now an
-  advisory, and only a legacy-only server is an error.
+## [0.1.3] — 2026-08-18
+
+The first release to contain the fixes that came out of testing against a real
+migrated server, rather than only against fixtures.
+
+### Added
+
+- [**A migration walkthrough**](docs/migration-walkthrough.md) taking a working
+  server from 7 breaking findings to READY, with real output throughout: the
+  full report, what each finding means, the actual diff, and an account of what
+  the tool got wrong and what it still cannot tell you.
+- Every rule declares `remediation: 'sdk' | 'application'` — whether an SDK
+  upgrade resolves the finding or the author must act. The terminal, JSON and
+  Markdown reports split their summaries on that line. Against a stock-SDK
+  server nearly everything is SDK plumbing, and saying so keeps maintainers out
+  of code they did not write.
+- `.github/dependabot.yml`, and the package metadata npm requires for
+  provenance (`repository`, `bugs`, `homepage`, `author`).
+
+### Fixed
+
+Five defects, every one found by contact with real software rather than by the
+test suite — the fixtures had encoded the same assumptions as the rules.
 
 - **Windows: `--stdio "npx ..."` failed with `spawn npx ENOENT`.** `npx` is a
-  `.cmd` shim on Windows, which Node cannot resolve without `shell: true` and,
-  since the fix for CVE-2024-27980, refuses to spawn directly. `mcp-stateless` now
-  resolves the executable itself through `PATHEXT` and routes batch shims via
-  `cmd.exe` with arguments it quotes, keeping `shell: true` off so command
-  metacharacters are still never interpreted. This made the tool unusable on
-  Windows for most of the ecosystem, including the exact `npx` invocation the
-  README documents.
-- **`--no-color` was documented but rejected by the argument parser.**
-  `node:util.parseArgs` has no `--no-` negation, so the flag had to be declared
-  explicitly. The `NO_COLOR` environment variable is now honoured too.
+  `.cmd` shim that Node cannot resolve without `shell: true` and, since the fix
+  for CVE-2024-27980, refuses to spawn directly. The executable is now resolved
+  through `PATHEXT` and batch shims are routed via `cmd.exe` with quoted
+  arguments, keeping `shell: true` off so command metacharacters are still
+  never interpreted. This made the tool unusable on Windows for most of the
+  ecosystem, including the exact `npx` invocation the README documents.
+- **The HTTP transport never sent `MCP-Protocol-Version`**, required by
+  SEP-2243 on every modern POST. A real SDK v2 server rejected all 18 probes
+  with `-32020` and seven rules fired on our own omission. The header is now
+  mirrored from the request's `_meta` envelope rather than hardcoded, so a rule
+  that deliberately sends an unsupported version still reaches the
+  version-rejection path instead of tripping HeaderMismatch.
+- **MCP001 checked `protocolVersions`** — the `DiscoverResult` field is
+  `supportedVersions` — **and expected `serverInfo` at the top level**, where
+  the schema does not define it. Both verified against the published schema.
+- **MCP002 reported dual-era servers as NOT READY.** A server answering
+  `server/discover` while still handling `initialize` is serving both eras, the
+  migration path the SDK documents as the recommended first step. Now an
+  advisory; only a legacy-only server is an error. `-32022` is also accepted
+  alongside `-32601` as a valid rejection of `initialize`.
+- **MCP009 blamed the server author** for something an SDK upgrade fixes, and
+  probed `subscriptions/listen` with an invented parameter shape (`subscribe`
+  where `SubscriptionFilter` defines `notifications`).
+- **`bin` was silently stripped at publish time.** npm normalises the manifest
+  more aggressively on publish than on pack, and rejected the `./` prefix on
+  `./dist/cli/index.js` — removed, not rewritten. The published package would
+  have installed cleanly with no working command. The release workflow now
+  fails if npm reports any auto-correction.
+- `--no-color` was documented in `--help` but rejected by the parser;
+  `node:util.parseArgs` has no `--no-` negation. `NO_COLOR` is honoured too.
 
-## [0.1.0] — 2026-08-17
+### Changed
+
+- Vitest 2.1.9 → 3.2.7, clearing five development-scope advisories including a
+  critical one. None ever reached users: the published package has zero runtime
+  dependencies.
+- README restructured for GitHub, and `PUSHING.md` / `SETUP.md` removed as
+  spent scaffolding.
+
+## [0.1.0] — 2026-08-18
 
 Initial release. Checks a live MCP server against revision
 [`2026-07-28`](https://modelcontextprotocol.io/specification/2026-07-28/changelog).
@@ -92,5 +135,8 @@ Initial release. Checks a live MCP server against revision
 - Generated per-rule documentation under `docs/rules/`, with a CI check that
   keeps it in step with the rule sources.
 
-[Unreleased]: https://github.com/Khanthtutzin/mcp-stateless/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Khanthtutzin/mcp-stateless/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/Khanthtutzin/mcp-stateless/releases/tag/v0.1.5
+[0.1.4]: https://github.com/Khanthtutzin/mcp-stateless/releases/tag/v0.1.4
+[0.1.3]: https://github.com/Khanthtutzin/mcp-stateless/releases/tag/v0.1.3
 [0.1.0]: https://github.com/Khanthtutzin/mcp-stateless/releases/tag/v0.1.0
