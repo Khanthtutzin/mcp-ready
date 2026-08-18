@@ -11,6 +11,15 @@
     "2026-07-28",
     "cli"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Khanthtutzin/mcp-ready.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Khanthtutzin/mcp-ready/issues"
+  },
+  "homepage": "https://github.com/Khanthtutzin/mcp-ready#readme",
+  "author": "Khant Htut Zin",
   "license": "MIT",
   "type": "module",
   "engines": {
