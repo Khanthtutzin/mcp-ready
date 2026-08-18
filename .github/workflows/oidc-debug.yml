@@ -1,0 +1,42 @@
+# Temporary diagnostic. Delete once trusted publishing works.
+# Prints only presence/absence and HTTP status — never the token itself.
+name: OIDC debug
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Is GitHub issuing an OIDC token?
+        run: |
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL set:   ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}${ACTIONS_ID_TOKEN_REQUEST_URL:-NO}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN set: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes}${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-NO}"
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org")
+            echo "token endpoint HTTP: $code   (200 = GitHub will issue it)"
+          fi
+
+      - name: npm version and config
+        run: |
+          npm install -g npm@^11 >/dev/null 2>&1
+          echo "npm: $(npm --version)"
+          echo "userconfig: ${NPM_CONFIG_USERCONFIG:-<unset>}"
+          echo "--- any auth configured? ---"
+          npm config get //registry.npmjs.org/:_authToken 2>&1 | sed 's/^/  /'
+          echo "--- .npmrc files present ---"
+          ls -a ~/.npmrc .npmrc 2>/dev/null || echo "  none"
+
+      - name: What does npm say when it tries?
+        run: npm publish --dry-run --loglevel verbose 2>&1 | grep -iE "oidc|trusted|auth|exchange" | head -20 || true
