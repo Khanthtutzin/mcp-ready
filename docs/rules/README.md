@@ -1,6 +1,6 @@
 # Rule catalogue
 
-Every check `mcp-ready` performs against MCP 2026-07-28, with the
+Every check `mcp-stateless` performs against MCP 2026-07-28, with the
 changelog entry it enforces.
 
 ## Breaking

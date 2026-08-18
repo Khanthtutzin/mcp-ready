@@ -35,7 +35,7 @@ describe('reporters', () => {
     const json = toJsonReport(report, '1.2.3');
 
     expect(json.schemaVersion).toBe(1);
-    expect(json.tool).toEqual({ name: 'mcp-ready', version: '1.2.3' });
+    expect(json.tool).toEqual({ name: 'mcp-stateless', version: '1.2.3' });
     expect(json.ready).toBe(false);
     expect(json.summary.errors).toBeGreaterThan(0);
     expect(json.summary.crashed).toBe(0);
@@ -66,7 +66,7 @@ describe('reporters', () => {
 
     expect(sarif.version).toBe('2.1.0');
     const run = sarif.runs[0];
-    expect(run.tool.driver.name).toBe('mcp-ready');
+    expect(run.tool.driver.name).toBe('mcp-stateless');
     expect(run.tool.driver.rules.length).toBe(18);
     expect(run.results.length).toBe(report.findings.length);
 
@@ -83,7 +83,7 @@ describe('reporters', () => {
     const report = await checkStdio('legacy');
     const md = renderMarkdown(report);
 
-    expect(md).toContain('## mcp-ready');
+    expect(md).toContain('## mcp-stateless');
     expect(md).toContain('**Not ready.**');
     expect(md).toContain('| Rule | Issue | Fixed by |');
     expect(md).toContain('<details>');

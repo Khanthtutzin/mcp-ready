@@ -1,18 +1,18 @@
-# mcp-ready
+# mcp-stateless
 
 **Is your MCP server ready for the 2026-07-28 stateless specification?**
 
-[![CI](https://github.com/Khanthtutzin/mcp-ready/actions/workflows/ci.yml/badge.svg)](https://github.com/Khanthtutzin/mcp-ready/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/mcp-ready.svg)](https://www.npmjs.com/package/mcp-ready)
+[![CI](https://github.com/Khanthtutzin/mcp-stateless/actions/workflows/ci.yml/badge.svg)](https://github.com/Khanthtutzin/mcp-stateless/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/mcp-stateless.svg)](https://www.npmjs.com/package/mcp-stateless)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
-`mcp-ready` connects to a running MCP server, probes what it actually does, and
+`mcp-stateless` connects to a running MCP server, probes what it actually does, and
 tells you exactly which parts of the 2026-07-28 breaking changes it fails —
 with the wire traffic that proves it and the specific change that fixes it.
 
 ```bash
-npx mcp-ready --stdio "node dist/server.js"
+npx mcp-stateless --stdio "node dist/server.js"
 ```
 
 ---
@@ -40,7 +40,7 @@ signatures. It explicitly stops there; in its own words, adopting the 2026-07-28
 protocol revision "is architectural and not codemod-automatable".
 
 That leaves the question the codemod cannot answer: _does the server I am now
-running actually conform?_ Static rewriting cannot tell you. `mcp-ready` answers
+running actually conform?_ Static rewriting cannot tell you. `mcp-stateless` answers
 it by asking the server itself.
 
 ## Quick start
@@ -49,19 +49,19 @@ No installation required.
 
 ```bash
 # stdio server
-npx mcp-ready --stdio "node dist/server.js"
+npx mcp-stateless --stdio "node dist/server.js"
 
 # Streamable HTTP server
-npx mcp-ready --http https://api.example.com/mcp
+npx mcp-stateless --http https://api.example.com/mcp
 
 # with authentication
-npx mcp-ready --http https://api.example.com/mcp --header "Authorization: Bearer $TOKEN"
+npx mcp-stateless --http https://api.example.com/mcp --header "Authorization: Bearer $TOKEN"
 ```
 
 ## What a run looks like
 
 ```
-mcp-ready — checking against MCP 2026-07-28
+mcp-stateless — checking against MCP 2026-07-28
 target: node dist/server.js (stdio)
 
 Breaking (5)
@@ -165,7 +165,7 @@ validation, and Client ID Metadata Documents. See
 ## Tested against real servers
 
 The fixture suite proves the rules against servers written to trip them. That is
-necessary but not sufficient, so `mcp-ready` is also run against real software.
+necessary but not sufficient, so `mcp-stateless` is also run against real software.
 
 **Pre-2026 servers** — the official `@modelcontextprotocol/*` servers, none of
 which has migrated:
@@ -186,7 +186,7 @@ over both transports:
 | `caching` (dual-era) | http      | READY, 1 dual-era advisory |
 
 Testing against the migrated SDK is what made the rules trustworthy. It found
-four defects in `mcp-ready` itself, all now fixed and covered by regression
+four defects in `mcp-stateless` itself, all now fixed and covered by regression
 tests:
 
 - the HTTP transport never sent the required `MCP-Protocol-Version` header, so
@@ -200,14 +200,14 @@ tests:
 
 If you find a case where a rule is wrong, that is a bug, and it is the most
 useful thing you can report. Please
-[open an issue](https://github.com/Khanthtutzin/mcp-ready/issues/new?template=false-positive.yml).
+[open an issue](https://github.com/Khanthtutzin/mcp-stateless/issues/new?template=false-positive.yml).
 
 ## In CI
 
 As a GitHub Action:
 
 ```yaml
-- uses: Khanthtutzin/mcp-ready@v1
+- uses: Khanthtutzin/mcp-stateless@v1
   with:
     stdio: node dist/server.js
 ```
@@ -216,11 +216,11 @@ Or upload SARIF so findings appear in the Security tab and inline on pull
 requests:
 
 ```yaml
-- run: npx mcp-ready --stdio "node dist/server.js" --format sarif --output mcp-ready.sarif
+- run: npx mcp-stateless --stdio "node dist/server.js" --format sarif --output mcp-stateless.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: mcp-ready.sarif
+    sarif_file: mcp-stateless.sarif
 ```
 
 ## Options
@@ -255,7 +255,7 @@ would be worse than nothing.
 ## Programmatic use
 
 ```ts
-import { runChecks, StdioTransport } from 'mcp-ready';
+import { runChecks, StdioTransport } from 'mcp-stateless';
 
 const transport = new StdioTransport('node dist/server.js');
 const report = await runChecks(transport);
@@ -270,7 +270,7 @@ if (!report.ready) {
 
 ## How it works
 
-`mcp-ready` speaks **both** protocol revisions. It hand-rolls JSON-RPC rather
+`mcp-stateless` speaks **both** protocol revisions. It hand-rolls JSON-RPC rather
 than using an MCP SDK, because an SDK abstracts away exactly what needs
 observing — it performs the handshake for you and normalises errors.
 
@@ -295,7 +295,7 @@ ANSI. Nothing is installed into your CI beyond this package.
 
 Adding a rule is one file plus one test — rules never touch the transport
 layer, only a shared `ProbeContext`. See [CONTRIBUTING.md](CONTRIBUTING.md),
-and the [`good first issue`](https://github.com/Khanthtutzin/mcp-ready/labels/good%20first%20issue)
+and the [`good first issue`](https://github.com/Khanthtutzin/mcp-stateless/labels/good%20first%20issue)
 label.
 
 The test suite runs every rule against real fixture MCP servers over real

@@ -30,11 +30,11 @@ function packageVersion(): string {
 }
 
 const HELP = `
-mcp-ready — check whether an MCP server is ready for the ${TARGET_REVISION} stateless spec
+mcp-stateless — check whether an MCP server is ready for the ${TARGET_REVISION} stateless spec
 
 USAGE
-  mcp-ready --stdio "<command>"      probe a server over stdio
-  mcp-ready --http <url>             probe a server over Streamable HTTP
+  mcp-stateless --stdio "<command>"      probe a server over stdio
+  mcp-stateless --http <url>             probe a server over Streamable HTTP
 
 OPTIONS
   --stdio <command>     Command that starts the server on stdio.
@@ -60,13 +60,13 @@ EXIT CODES
   2  usage or connection error
 
 EXAMPLES
-  mcp-ready --stdio "node dist/server.js"
-  mcp-ready --http https://api.example.com/mcp --header "Authorization: Bearer $TOKEN"
-  mcp-ready --stdio "npx -y my-server" --format sarif --output mcp-ready.sarif
+  mcp-stateless --stdio "node dist/server.js"
+  mcp-stateless --http https://api.example.com/mcp --header "Authorization: Bearer $TOKEN"
+  mcp-stateless --stdio "npx -y my-server" --format sarif --output mcp-stateless.sarif
 `;
 
 function listRules(): string {
-  const lines = [`mcp-ready rule catalogue — MCP ${TARGET_REVISION}`, ''];
+  const lines = [`mcp-stateless rule catalogue — MCP ${TARGET_REVISION}`, ''];
   for (const rule of ALL_RULES) {
     const level = rule.severity === 'error' ? 'error  ' : 'warning';
     lines.push(`  ${rule.id}  ${level}  ${rule.title}`);
@@ -241,7 +241,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     return report.errorCount > 0 ? EXIT_FINDINGS : EXIT_OK;
   } catch (err) {
-    process.stderr.write(`mcp-ready failed: ${(err as Error).message}\n`);
+    process.stderr.write(`mcp-stateless failed: ${(err as Error).message}\n`);
     return EXIT_USAGE;
   } finally {
     await transport.close();
@@ -268,7 +268,7 @@ if (isDirectInvocation()) {
       process.exitCode = code;
     },
     (err) => {
-      process.stderr.write(`mcp-ready crashed: ${(err as Error).stack ?? err}\n`);
+      process.stderr.write(`mcp-stateless crashed: ${(err as Error).stack ?? err}\n`);
       process.exitCode = EXIT_USAGE;
     },
   );

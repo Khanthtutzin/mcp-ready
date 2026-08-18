@@ -45,7 +45,7 @@ export function toJsonReport(report: RunReport, version: string): JsonReport {
   const crashed = report.outcomes.filter((o) => o.crashed);
   return {
     schemaVersion: 1,
-    tool: { name: 'mcp-ready', version },
+    tool: { name: 'mcp-stateless', version },
     target: report.target,
     transport: report.transport,
     targetRevision: report.targetRevision,

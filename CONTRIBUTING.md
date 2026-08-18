@@ -1,4 +1,4 @@
-# Contributing to mcp-ready
+# Contributing to mcp-stateless
 
 Thanks for helping. The most valuable contribution is usually a **new rule** or
 a **false-positive report**, and both are deliberately cheap to make.
@@ -6,8 +6,8 @@ a **false-positive report**, and both are deliberately cheap to make.
 ## Getting set up
 
 ```bash
-git clone https://github.com/Khanthtutzin/mcp-ready.git
-cd mcp-ready
+git clone https://github.com/Khanthtutzin/mcp-stateless.git
+cd mcp-stateless
 npm install
 npm test
 ```
@@ -118,7 +118,7 @@ Write for someone who has not read the changelog and does not want to.
 These are important — please open an issue with:
 
 - the rule id
-- the output of `mcp-ready ... --only MCP0NN --verbose`, which includes the
+- the output of `mcp-stateless ... --only MCP0NN --verbose`, which includes the
   JSON-RPC exchange
 - what your server does and why you believe it is correct
 

@@ -48,4 +48,4 @@ export function serverCapabilities(ctx: ProbeContext): Record<string, any> {
 
 /** A URI no real server should resolve, used to trigger not-found paths. */
 export const NONEXISTENT_URI =
-  'file:///mcp-ready-probe/definitely-not-a-real-resource-9f3a1c.txt';
+  'file:///mcp-stateless-probe/definitely-not-a-real-resource-9f3a1c.txt';

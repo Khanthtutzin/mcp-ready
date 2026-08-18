@@ -1,4 +1,4 @@
-# mcp-ready — project guide
+# mcp-stateless — project guide
 
 An orientation document: what this project is, how it is built, how the pieces
 fit together, and how work flows through it. The [README](../README.md) is the
@@ -10,7 +10,7 @@ should feel obvious.
 
 ## 1. What the project is
 
-`mcp-ready` is a **conformance probe and migration checker** for MCP servers.
+`mcp-stateless` is a **conformance probe and migration checker** for MCP servers.
 
 You point it at a running MCP server. It talks to that server over the wire,
 watches how it answers, and reports which parts of the MCP `2026-07-28`
@@ -18,8 +18,8 @@ specification the server violates — with the JSON-RPC traffic that proves each
 finding and the specific code change that fixes it.
 
 ```bash
-npx mcp-ready --stdio "node dist/server.js"
-npx mcp-ready --http https://api.example.com/mcp
+npx mcp-stateless --stdio "node dist/server.js"
+npx mcp-stateless --http https://api.example.com/mcp
 ```
 
 It is a CLI, a library, and a GitHub Action, built from one code path.
@@ -174,7 +174,7 @@ near-identical handshake attempts.
 
 ```mermaid
 sequenceDiagram
-    participant P as mcp-ready
+    participant P as mcp-stateless
     participant S as server under test
     P->>S: server/discover (with _meta)
     Note right of P: mandatory now;<br/>harmless against a legacy server
@@ -462,7 +462,7 @@ suite), the tag must match the `package.json` version, then `npm publish
 --provenance` and a GitHub release.
 
 **[action.yml](../action.yml)** is a composite action wrapping the CLI. It runs
-`mcp-ready` up to three times on purpose: once as JSON to populate the `ready` /
+`mcp-stateless` up to three times on purpose: once as JSON to populate the `ready` /
 `errors` / `warnings` step outputs, once in whatever format the user asked to
 see, and once as markdown into `$GITHUB_STEP_SUMMARY`. Each run uses `--fail-on
 never`, and the action applies the `fail-on` policy itself — so the step's

@@ -21,9 +21,9 @@ export function renderSarif(report: RunReport, version: string): string {
       {
         tool: {
           driver: {
-            name: 'mcp-ready',
+            name: 'mcp-stateless',
             version,
-            informationUri: 'https://github.com/Khanthtutzin/mcp-ready',
+            informationUri: 'https://github.com/Khanthtutzin/mcp-stateless',
             rules: ALL_RULES.map((rule) => ({
               id: rule.id,
               name: rule.id,
@@ -45,7 +45,7 @@ export function renderSarif(report: RunReport, version: string): string {
           {
             executionSuccessful: true,
             startTimeUtc: report.startedAt,
-            commandLine: `mcp-ready ${report.target}`,
+            commandLine: `mcp-stateless ${report.target}`,
           },
         ],
         results: report.findings.map((f) => ({
@@ -65,7 +65,7 @@ export function renderSarif(report: RunReport, version: string): string {
           partialFingerprints: {
             // Stable across runs so GitHub can track a finding over time; the
             // target is included so two servers in one repo do not collide.
-            mcpReadyFindingV1: `${f.ruleId}:${report.target}`,
+            mcpStatelessFindingV1: `${f.ruleId}:${report.target}`,
           },
         })),
       },

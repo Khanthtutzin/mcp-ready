@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in mcp-ready itself is broken
+description: Something in mcp-stateless itself is broken
 title: 'Bug: '
 labels: ['bug']
 body:
@@ -28,7 +28,7 @@ body:
     attributes:
       label: Command you ran
       render: bash
-      placeholder: npx mcp-ready --http https://example.com/mcp --verbose
+      placeholder: npx mcp-stateless --http https://example.com/mcp --verbose
     validations:
       required: true
 
@@ -42,7 +42,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: mcp-ready version
+      label: mcp-stateless version
     validations:
       required: true
 

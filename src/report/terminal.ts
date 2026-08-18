@@ -30,7 +30,7 @@ export function renderTerminal(report: RunReport, options: TerminalOptions = {})
 
   lines.push('');
   lines.push(
-    `${c.bold('mcp-ready')} ${c.dim(`— checking against MCP ${report.targetRevision}`)}`,
+    `${c.bold('mcp-stateless')} ${c.dim(`— checking against MCP ${report.targetRevision}`)}`,
   );
   lines.push(`${c.dim('target:')} ${report.target} ${c.dim(`(${report.transport})`)}`);
   lines.push('');
@@ -69,7 +69,7 @@ export function renderTerminal(report: RunReport, options: TerminalOptions = {})
   if (crashed.length) {
     lines.push(c.bold(c.yellow(`Rules that failed to run (${crashed.length})`)));
     lines.push(
-      c.dim('  This is a bug in mcp-ready. Please report it with the output below.'),
+      c.dim('  This is a bug in mcp-stateless. Please report it with the output below.'),
     );
     for (const o of crashed) {
       lines.push(`  ${o.rule.id}: ${o.crashed?.split('\n')[0] ?? 'unknown error'}`);

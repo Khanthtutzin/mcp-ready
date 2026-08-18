@@ -8,7 +8,7 @@ export function renderMarkdown(report: RunReport): string {
   const errors = report.findings.filter((f) => f.severity === 'error');
   const warnings = report.findings.filter((f) => f.severity === 'warning');
 
-  lines.push(`## mcp-ready — MCP ${report.targetRevision} readiness`);
+  lines.push(`## mcp-stateless — MCP ${report.targetRevision} readiness`);
   lines.push('');
 
   if (report.unreachable) {

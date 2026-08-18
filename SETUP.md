@@ -5,7 +5,7 @@ decision only you can make. Delete this file once you have worked through it.
 
 ## 1. Put your name on the license
 
-`LICENSE` currently reads `Copyright (c) 2026 mcp-ready contributors`. That is a
+`LICENSE` currently reads `Copyright (c) 2026 mcp-stateless contributors`. That is a
 valid and common form, but if you would rather it carry your name, change it
 now — amending a copyright line later requires every contributor's agreement.
 
@@ -25,10 +25,10 @@ Once it is up, set these in the repository settings:
 
 ## 3. Publish to npm
 
-`mcp-ready` was free on npm as of 2026-08-17, but re-check before you rely on it:
+`mcp-stateless` was free on npm as of 2026-08-17, but re-check before you rely on it:
 
 ```bash
-npm view mcp-ready
+npm view mcp-stateless
 ```
 
 Then add an `NPM_TOKEN` secret to the repository (Settings → Secrets and

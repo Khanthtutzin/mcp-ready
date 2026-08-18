@@ -1,6 +1,6 @@
-name: 'mcp-ready'
+name: 'mcp-stateless'
 description: 'Check whether an MCP server is ready for the 2026-07-28 stateless specification.'
-author: 'mcp-ready contributors'
+author: 'mcp-stateless contributors'
 
 branding:
   icon: 'check-circle'
@@ -59,7 +59,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Run mcp-ready
+    - name: Run mcp-stateless
       id: check
       shell: bash
       env:
@@ -103,12 +103,12 @@ runs:
         # the user asked to see.
         json_file="$(mktemp)"
         set +e
-        npx --yes mcp-ready "${args[@]}" --format json --output "$json_file" --fail-on never
+        npx --yes mcp-stateless "${args[@]}" --format json --output "$json_file" --fail-on never
         probe_status=$?
         set -e
 
         if [ "$probe_status" -ne 0 ] || [ ! -s "$json_file" ]; then
-          echo "::error::mcp-ready could not reach the server."
+          echo "::error::mcp-stateless could not reach the server."
           exit 1
         fi
 
@@ -123,10 +123,10 @@ runs:
         # Now render what the user actually asked for.
         display=(--format "$INPUT_FORMAT" --fail-on never)
         if [ -n "$INPUT_OUTPUT" ]; then display+=(--output "$INPUT_OUTPUT"); fi
-        npx --yes mcp-ready "${args[@]}" "${display[@]}"
+        npx --yes mcp-stateless "${args[@]}" "${display[@]}"
 
         if [ "$INPUT_SUMMARY" = "true" ]; then
-          npx --yes mcp-ready "${args[@]}" --format markdown --fail-on never \
+          npx --yes mcp-stateless "${args[@]}" --format markdown --fail-on never \
             >> "$GITHUB_STEP_SUMMARY"
         fi
 
@@ -134,13 +134,13 @@ runs:
           never) exit 0 ;;
           warning)
             if [ "$errors" -gt 0 ] || [ "$warnings" -gt 0 ]; then
-              echo "::error::mcp-ready found $errors breaking and $warnings advisory issue(s)."
+              echo "::error::mcp-stateless found $errors breaking and $warnings advisory issue(s)."
               exit 1
             fi
             ;;
           *)
             if [ "$errors" -gt 0 ]; then
-              echo "::error::mcp-ready found $errors breaking issue(s). See the step summary."
+              echo "::error::mcp-stateless found $errors breaking issue(s). See the step summary."
               exit 1
             fi
             ;;

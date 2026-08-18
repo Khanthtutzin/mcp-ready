@@ -17,7 +17,7 @@ const TOOLS = [
   { name: 'beta', description: 'Second tool.', inputSchema: { type: 'object' } },
 ];
 
-const SERVER_INFO = { name: 'mcp-ready-fixture', version: '1.0.0' };
+const SERVER_INFO = { name: 'mcp-stateless-fixture', version: '1.0.0' };
 const META_PROTOCOL_VERSION = 'io.modelcontextprotocol/protocolVersion';
 const META_SERVER_INFO = 'io.modelcontextprotocol/serverInfo';
 

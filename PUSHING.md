@@ -19,7 +19,7 @@ Nothing is pushed yet. Check what one commit is about to become public:
 git log --oneline
 ```
 
-You should see exactly one commit, `feat: mcp-ready — MCP 2026-07-28 stateless migration checker`.
+You should see exactly one commit, `feat: mcp-stateless — MCP 2026-07-28 stateless migration checker`.
 
 ```bash
 git status
@@ -93,8 +93,8 @@ Expect 43 passing tests and no other output of note.
 Go to <https://github.com/new> and set:
 
 - **Owner**: `Khanthtutzin`
-- **Repository name**: `mcp-ready` — it must match, every URL in the project
-  points at `github.com/Khanthtutzin/mcp-ready`
+- **Repository name**: `mcp-stateless` — it must match, every URL in the project
+  points at `github.com/Khanthtutzin/mcp-stateless`
 - **Description**: `Check whether an MCP server is ready for the 2026-07-28 stateless specification.`
 - **Visibility**: **Public** — required for the Codex for Open Source program
 - **Initialize this repository with**: **nothing at all.** Leave the README,
@@ -112,7 +112,7 @@ they assume you have no commits yet. Use the steps below instead.
 ## Step 6 — Point your local repository at it
 
 ```bash
-git remote add origin https://github.com/Khanthtutzin/mcp-ready.git
+git remote add origin https://github.com/Khanthtutzin/mcp-stateless.git
 ```
 
 Verify:
@@ -121,7 +121,7 @@ Verify:
 git remote -v
 ```
 
-Both lines should read `https://github.com/Khanthtutzin/mcp-ready.git`.
+Both lines should read `https://github.com/Khanthtutzin/mcp-stateless.git`.
 
 If you typed it wrong, fix it with `git remote set-url origin <correct-url>`
 rather than adding a second remote.
@@ -159,7 +159,7 @@ window; let the credential manager or the password prompt take it.
 git log --oneline origin/main
 ```
 
-Then open <https://github.com/Khanthtutzin/mcp-ready> and check:
+Then open <https://github.com/Khanthtutzin/mcp-stateless> and check:
 
 - The README renders, and the rule tables and links look right
 - **Actions** tab: the CI workflow is running. It builds on Node 20/22/24 on
@@ -183,7 +183,7 @@ batch of issues.
 ## If something goes wrong
 
 **`error: remote origin already exists`** — you ran step 6 twice.
-`git remote set-url origin https://github.com/Khanthtutzin/mcp-ready.git`
+`git remote set-url origin https://github.com/Khanthtutzin/mcp-stateless.git`
 
 **`Updates were rejected because the remote contains work that you do not have locally`**
 — you initialised the GitHub repository with a README or license. Easiest fix,

@@ -75,7 +75,7 @@ ${rule.rationale}
 ## Running just this check
 
 \`\`\`bash
-npx mcp-ready --stdio "node dist/server.js" --only ${rule.id}
+npx mcp-stateless --stdio "node dist/server.js" --only ${rule.id}
 \`\`\`
 
 ## Suppressing it
@@ -83,7 +83,7 @@ npx mcp-ready --stdio "node dist/server.js" --only ${rule.id}
 If this check does not apply to your server, skip it:
 
 \`\`\`bash
-npx mcp-ready --stdio "node dist/server.js" --skip ${rule.id}
+npx mcp-stateless --stdio "node dist/server.js" --skip ${rule.id}
 \`\`\`
 
 Rule ids are permanent and are never reissued, so a suppression cannot start
@@ -104,7 +104,7 @@ function index(rules) {
 
   return `# Rule catalogue
 
-Every check \`mcp-ready\` performs against MCP ${TARGET_REVISION}, with the
+Every check \`mcp-stateless\` performs against MCP ${TARGET_REVISION}, with the
 changelog entry it enforces.
 
 ## Breaking

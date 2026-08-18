@@ -2,13 +2,13 @@
 
 ## Supported versions
 
-The latest minor release receives security fixes. `mcp-ready` is pre-1.0, so
+The latest minor release receives security fixes. `mcp-stateless` is pre-1.0, so
 patches land on the newest version only.
 
 ## Reporting a vulnerability
 
 Please report security issues privately through
-[GitHub Security Advisories](https://github.com/Khanthtutzin/mcp-ready/security/advisories/new)
+[GitHub Security Advisories](https://github.com/Khanthtutzin/mcp-stateless/security/advisories/new)
 rather than opening a public issue.
 
 Include what the issue is, how to reproduce it, and what an attacker could do
@@ -16,7 +16,7 @@ with it. You can expect an initial response within seven days.
 
 ## Threat model
 
-`mcp-ready` is a diagnostic client. Two properties are worth stating because
+`mcp-stateless` is a diagnostic client. Two properties are worth stating because
 they shape what counts as a vulnerability here:
 
 **It executes what you tell it to.** `--stdio "<command>"` spawns a child
@@ -38,7 +38,7 @@ errors. It performs no writes and calls no tools.
 
 ## Out of scope
 
-- Findings from running `mcp-ready` against a server you do not control
+- Findings from running `mcp-stateless` against a server you do not control
 - The behaviour of servers being probed
 - Dependency vulnerabilities in devDependencies (the published package has zero
   runtime dependencies)

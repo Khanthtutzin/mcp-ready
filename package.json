@@ -1,5 +1,5 @@
 {
-  "name": "mcp-ready",
+  "name": "mcp-stateless",
   "version": "0.1.0",
   "description": "Check whether an MCP server is ready for the 2026-07-28 stateless specification.",
   "keywords": [
@@ -13,12 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Khanthtutzin/mcp-ready.git"
+    "url": "git+https://github.com/Khanthtutzin/mcp-stateless.git"
   },
   "bugs": {
-    "url": "https://github.com/Khanthtutzin/mcp-ready/issues"
+    "url": "https://github.com/Khanthtutzin/mcp-stateless/issues"
   },
-  "homepage": "https://github.com/Khanthtutzin/mcp-ready#readme",
+  "homepage": "https://github.com/Khanthtutzin/mcp-stateless#readme",
   "author": "Khant Htut Zin",
   "license": "MIT",
   "type": "module",
@@ -26,7 +26,7 @@
     "node": ">=20.0.0"
   },
   "bin": {
-    "mcp-ready": "dist/cli/index.js"
+    "mcp-stateless": "dist/cli/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,5 +1,5 @@
 name: False positive
-description: mcp-ready flagged something that is actually correct
+description: mcp-stateless flagged something that is actually correct
 title: '[MCP0NN] False positive: '
 labels: ['false-positive', 'bug']
 body:
@@ -24,7 +24,7 @@ body:
       description: |
         Run with `--only <RULE> --verbose` so the JSON-RPC exchange is included.
         **Redact any tokens** before pasting.
-      placeholder: npx mcp-ready --stdio "node dist/server.js" --only MCP004 --verbose
+      placeholder: npx mcp-stateless --stdio "node dist/server.js" --only MCP004 --verbose
       render: text
     validations:
       required: true
@@ -46,7 +46,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: mcp-ready version
-      placeholder: 'output of: npx mcp-ready --version'
+      label: mcp-stateless version
+      placeholder: 'output of: npx mcp-stateless --version'
     validations:
       required: true

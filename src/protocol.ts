@@ -1,7 +1,7 @@
 /**
  * Protocol constants for the MCP revisions this tool understands.
  *
- * `mcp-ready` deliberately speaks two revisions: the 2026-07-28 stateless
+ * `mcp-stateless` deliberately speaks two revisions: the 2026-07-28 stateless
  * revision it is checking *for*, and the pre-2026 stateful revisions it
  * expects to find servers still implementing. Everything version-specific
  * lives here so that adding a future revision is a single-file change.
@@ -9,7 +9,7 @@
  * @see https://modelcontextprotocol.io/specification/2026-07-28/changelog
  */
 
-/** The revision `mcp-ready` checks compliance against. */
+/** The revision `mcp-stateless` checks compliance against. */
 export const TARGET_REVISION = '2026-07-28';
 
 /** Revisions that predate the stateless rewrite. */
@@ -84,8 +84,8 @@ export const REQUIRED_METHODS = ['server/discover'] as const;
 
 /** Identity this tool reports to servers it probes. */
 export const CLIENT_INFO = {
-  name: 'mcp-ready',
-  title: 'mcp-ready conformance probe',
+  name: 'mcp-stateless',
+  title: 'mcp-stateless conformance probe',
   version: '0.1.0',
 } as const;
 

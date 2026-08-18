@@ -45,7 +45,7 @@ produced a false finding against a correctly migrated server.
 
 - **Windows: `--stdio "npx ..."` failed with `spawn npx ENOENT`.** `npx` is a
   `.cmd` shim on Windows, which Node cannot resolve without `shell: true` and,
-  since the fix for CVE-2024-27980, refuses to spawn directly. `mcp-ready` now
+  since the fix for CVE-2024-27980, refuses to spawn directly. `mcp-stateless` now
   resolves the executable itself through `PATHEXT` and routes batch shims via
   `cmd.exe` with arguments it quotes, keeping `shell: true` off so command
   metacharacters are still never interpreted. This made the tool unusable on
@@ -92,5 +92,5 @@ Initial release. Checks a live MCP server against revision
 - Generated per-rule documentation under `docs/rules/`, with a CI check that
   keeps it in step with the rule sources.
 
-[Unreleased]: https://github.com/Khanthtutzin/mcp-ready/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Khanthtutzin/mcp-ready/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Khanthtutzin/mcp-stateless/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Khanthtutzin/mcp-stateless/releases/tag/v0.1.0

@@ -56,7 +56,7 @@ an individual is officially representing the community in public spaces.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement through
-[GitHub Security Advisories](https://github.com/Khanthtutzin/mcp-ready/security/advisories/new)
+[GitHub Security Advisories](https://github.com/Khanthtutzin/mcp-stateless/security/advisories/new)
 or by opening a confidential issue. All complaints will be reviewed and
 investigated promptly and fairly.
 

@@ -1,7 +1,7 @@
 /**
  * Programmatic entry point.
  *
- * The CLI is a thin wrapper over this, so anything `mcp-ready` can do from a
+ * The CLI is a thin wrapper over this, so anything `mcp-stateless` can do from a
  * terminal can also be done from a test suite or a custom harness.
  */
 export { runChecks, type RunOptions, type RunReport, type RuleOutcome } from './run.js';
