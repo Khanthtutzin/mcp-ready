@@ -1,6 +1,6 @@
 {
   "name": "mcp-stateless",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Check whether an MCP server is ready for the 2026-07-28 stateless specification.",
   "keywords": [
     "mcp",
