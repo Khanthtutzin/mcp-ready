@@ -17,10 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Deliberately NO registry-url. setup-node's registry-url writes an
+      # .npmrc containing //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+      # and points NPM_CONFIG_USERCONFIG at it. With no token set that leaves a
+      # configured-but-empty credential, and npm takes it as "auth is already
+      # handled" — it never falls back to OIDC, sends an unauthenticated PUT,
+      # and the registry answers 404. Omitting registry-url is what lets
+      # trusted publishing engage.
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
           cache: npm
 
       # The npm bundled with the runner's Node 22 predates OIDC support, and
