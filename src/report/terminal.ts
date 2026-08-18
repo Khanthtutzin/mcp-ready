@@ -105,7 +105,7 @@ export function renderTerminal(report: RunReport, options: TerminalOptions = {})
     if (sdkErrors) {
       lines.push(
         c.dim(
-          `  ${sdkErrors} of those are protocol plumbing owned by your MCP SDK — ` +
+          `  ${sdkErrors} of those ${sdkErrors === 1 ? 'is' : 'are'} protocol plumbing owned by your MCP SDK — ` +
             'upgrading to a release that targets ' +
             `${report.targetRevision} resolves them with no change to your code.`,
         ),

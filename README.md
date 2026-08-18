@@ -32,9 +32,16 @@ is the largest breaking change in the protocol's history. **MCP went stateless.*
 - Protocol error codes were renumbered
 - SSE stream resumability was removed
 
-Thousands of servers now need to migrate on a twelve-month deprecation clock,
-and the [release announcement](https://blog.modelcontextprotocol.io/posts/2026-07-28/)
-ships no migration tooling. This is that tooling.
+Thousands of servers now need to migrate on a twelve-month deprecation clock.
+
+The official [`@modelcontextprotocol/codemod`](https://www.npmjs.com/package/@modelcontextprotocol/codemod)
+rewrites the v1→v2 **SDK API surface** — imports, symbol renames, handler
+signatures. It explicitly stops there; in its own words, adopting the 2026-07-28
+protocol revision "is architectural and not codemod-automatable".
+
+That leaves the question the codemod cannot answer: _does the server I am now
+running actually conform?_ Static rewriting cannot tell you. `mcp-ready` answers
+it by asking the server itself.
 
 ## Quick start
 
@@ -63,8 +70,8 @@ Breaking (5)
       found     server/discover returned JSON-RPC error -32600: Server not initialized.
       expected  Servers MUST implement server/discover, advertising supported protocol
                 versions, capabilities and identity.
-      fix       Add a server/discover handler returning { protocolVersions, capabilities,
-                serverInfo }. Current SDKs implement this for you once upgraded.
+      fix       Add a server/discover handler returning { supportedVersions,
+                capabilities }. Current SDKs implement this for you once upgraded.
       spec      https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle
 
   × MCP002  Server still requires the initialize handshake
@@ -157,21 +164,43 @@ validation, and Client ID Metadata Documents. See
 
 ## Tested against real servers
 
-Beyond the fixture suite, `mcp-ready` is run against the official
-`@modelcontextprotocol/*` servers. As of 2026-08-17, none of them has migrated —
-and neither has the TypeScript SDK, whose latest release (`1.30.0`) predates the
-specification by a day.
+The fixture suite proves the rules against servers written to trip them. That is
+necessary but not sufficient, so `mcp-ready` is also run against real software.
 
-| Server                       | Breaking | Advisory | SDK / your code |
-| ---------------------------- | -------- | -------- | --------------- |
-| `server-everything`          | 10       | 2        | 9 / 1           |
-| `server-memory`              | 9        | 1        | 8 / 1           |
-| `server-filesystem`          | 7        | 1        | 6 / 1           |
-| `server-sequential-thinking` | 7        | 1        | 6 / 1           |
+**Pre-2026 servers** — the official `@modelcontextprotocol/*` servers, none of
+which has migrated:
 
-Zero false positives and zero rule crashes across all four. If you find a case
-where a rule is wrong, that is a bug — please
-[report it](https://github.com/Khanthtutzin/mcp-ready/issues/new?template=false-positive.yml).
+| Server                       | Breaking | Advisory |
+| ---------------------------- | -------- | -------- |
+| `server-everything`          | 10       | 2        |
+| `server-memory`              | 9        | 1        |
+| `server-filesystem`          | 7        | 1        |
+| `server-sequential-thinking` | 7        | 1        |
+
+**A migrated server** — the TypeScript SDK at `2.0.0-alpha.0`, built from source,
+over both transports:
+
+| Example              | Transport | Verdict                    |
+| -------------------- | --------- | -------------------------- |
+| `server-quickstart`  | stdio     | READY, no findings         |
+| `caching` (dual-era) | http      | READY, 1 dual-era advisory |
+
+Testing against the migrated SDK is what made the rules trustworthy. It found
+four defects in `mcp-ready` itself, all now fixed and covered by regression
+tests:
+
+- the HTTP transport never sent the required `MCP-Protocol-Version` header, so
+  a real v2 server rejected every probe and seven rules fired spuriously
+- `server/discover` was checked for `protocolVersions`; the schema field is
+  `supportedVersions`
+- `serverInfo` was expected at the top level of `DiscoverResult`, where the
+  schema does not define it
+- a **dual-era** server — the SDK's own recommended migration path — was
+  reported NOT READY for still answering `initialize`
+
+If you find a case where a rule is wrong, that is a bug, and it is the most
+useful thing you can report. Please
+[open an issue](https://github.com/Khanthtutzin/mcp-ready/issues/new?template=false-positive.yml).
 
 ## In CI
 

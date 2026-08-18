@@ -93,3 +93,32 @@ describe('rule selection', () => {
     expect(ran).toContain('MCP006');
   });
 });
+
+describe('stdio — dual-era server', () => {
+  /**
+   * Regression: this reported NOT READY against the SDK's own `caching`
+   * example, which serves both eras. Dual-era is the migration path the SDK
+   * documents as the recommended first step, so failing it inverted the
+   * tool's advice for servers that had done the right thing.
+   */
+  it('is READY, with the legacy handshake reported as an advisory', async () => {
+    const report = await checkStdio('dual-era');
+
+    expect(crashedRules(report)).toEqual([]);
+    expect(report.ready).toBe(true);
+    expect(report.errorCount).toBe(0);
+
+    const dual = report.findings.find((f) => f.ruleId === 'MCP002')!;
+    expect(dual).toBeDefined();
+    expect(dual.severity).toBe('warning');
+    expect(dual.title).toMatch(/dual-era/);
+    expect(dual.fix).toMatch(/No action needed today/);
+  });
+
+  it('still calls a legacy-only server NOT READY', async () => {
+    // The dual-era carve-out keys off server/discover working. A server with
+    // no discover and a live initialize must stay an error.
+    const report = await checkStdio('legacy', { only: ['MCP002'] });
+    expect(report.findings.some((f) => f.severity === 'error')).toBe(true);
+  });
+});

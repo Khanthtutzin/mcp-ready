@@ -1,5 +1,6 @@
 /** Types for the hand-written HTTP fixture server. */
-export type FixtureMode = 'legacy' | 'modern' | 'strict-params' | 'strict-headers';
+export type FixtureMode =
+  'legacy' | 'modern' | 'strict-params' | 'strict-headers' | 'dual-era';
 
 export interface HttpFixture {
   url: string;

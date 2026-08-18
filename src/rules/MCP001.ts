@@ -25,7 +25,7 @@ export const MCP001: Rule = {
           observed: `server/discover returned ${describe(ex)}.`,
           expected:
             'Servers MUST implement server/discover, advertising supported protocol versions, capabilities and identity.',
-          fix: 'Add a server/discover handler returning { protocolVersions, capabilities, serverInfo }. Current SDKs (TypeScript, Python, Go, C#) implement this for you once upgraded to a 2026-07-28 release.',
+          fix: 'Add a server/discover handler returning { supportedVersions, capabilities }, with identity in _meta. Current SDKs implement this for you once upgraded to a 2026-07-28 release.',
           evidence: [ex],
         }),
       ];
@@ -35,32 +35,25 @@ export const MCP001: Rule = {
     const result = resultOf(ex) ?? {};
     const findings: Finding[] = [];
 
-    const versions = result['protocolVersions'];
+    // The field is `supportedVersions`, per DiscoverResult in the 2026-07-28
+    // schema. An earlier draft of this rule guessed `protocolVersions` and
+    // reported a false error against every compliant server.
+    const versions = result['supportedVersions'];
     if (!Array.isArray(versions) || versions.length === 0) {
       findings.push(
         finding(this, {
-          title: 'server/discover does not advertise protocolVersions',
-          observed: `server/discover succeeded but protocolVersions was ${JSON.stringify(versions)}.`,
+          title: 'server/discover does not advertise supportedVersions',
+          observed: `server/discover succeeded but supportedVersions was ${JSON.stringify(versions)}.`,
           expected:
-            'The result MUST list every protocol revision the server supports, so clients can select one up front.',
-          fix: 'Return a non-empty protocolVersions array, e.g. ["2026-07-28"].',
+            'DiscoverResult.supportedVersions MUST list every protocol revision the server supports, so clients can select one up front.',
+          fix: 'Return a non-empty supportedVersions array, e.g. ["2026-07-28"].',
           evidence: [ex],
         }),
       );
     }
 
-    if (!result['serverInfo'] || typeof result['serverInfo'] !== 'object') {
-      findings.push(
-        finding(this, {
-          title: 'server/discover does not advertise serverInfo',
-          severity: 'warning',
-          observed: 'server/discover succeeded but returned no serverInfo object.',
-          expected: 'The result identifies the server via serverInfo { name, version }.',
-          fix: 'Include serverInfo in the server/discover result.',
-          evidence: [ex],
-        }),
-      );
-    }
+    // Identity is NOT a member of DiscoverResult — it lives in _meta, which
+    // MCP018 already covers. This rule deliberately says nothing about it.
 
     return findings;
   },

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { checkHttp, crashedRules, ruleIds } from './helpers.js';
+import { HttpTransport } from '../src/transport/http.js';
+import { modernMeta } from '../src/probe/context.js';
+import { TARGET_REVISION } from '../src/protocol.js';
 
 describe('http — legacy 2025-11-25 server', () => {
   it('reports the transport-level breaking changes', async () => {
@@ -66,5 +69,76 @@ describe('http — server that rejects the routing headers', () => {
     // MCP013's control call still carries the headers, so it must stay quiet.
     const report = await checkHttp('strict-headers');
     expect(ruleIds(report)).not.toContain('MCP013');
+  });
+});
+
+describe('http transport — required standard headers', () => {
+  /**
+   * Regression: the transport never sent MCP-Protocol-Version, which SEP-2243
+   * requires on every modern POST. A real SDK v2 server rejected every probe
+   * with -32020, and seven rules reported findings that were entirely our
+   * fault. The header must also *match* the _meta envelope, so it is mirrored
+   * from the body rather than hardcoded.
+   */
+  it('sends MCP-Protocol-Version matching the _meta envelope', async () => {
+    const { startHttpFixture } = await import('./fixtures/servers/http-server.mjs');
+    const fixture = await startHttpFixture('modern');
+    const transport = new HttpTransport(fixture.url);
+    try {
+      const ex = await transport.send({
+        jsonrpc: '2.0',
+        method: 'tools/list',
+        params: { _meta: modernMeta() },
+      });
+      expect(ex.requestHeaders['mcp-protocol-version']).toBe(TARGET_REVISION);
+      expect(ex.requestHeaders['mcp-method']).toBe('tools/list');
+    } finally {
+      await transport.close();
+      await fixture.close();
+    }
+  });
+
+  it('mirrors an overridden version so version probes are not masked', async () => {
+    // MCP012 sends an unsupported version deliberately. If the header stayed
+    // pinned to the real revision the server would answer HeaderMismatch and
+    // the rule would never see the version rejection it is testing for.
+    const { startHttpFixture } = await import('./fixtures/servers/http-server.mjs');
+    const fixture = await startHttpFixture('modern');
+    const transport = new HttpTransport(fixture.url);
+    try {
+      const ex = await transport.send({
+        jsonrpc: '2.0',
+        method: 'tools/list',
+        params: {
+          _meta: {
+            ...modernMeta(),
+            'io.modelcontextprotocol/protocolVersion': '1999-01-01',
+          },
+        },
+      });
+      expect(ex.requestHeaders['mcp-protocol-version']).toBe('1999-01-01');
+    } finally {
+      await transport.close();
+      await fixture.close();
+    }
+  });
+
+  it('omits the header entirely on a legacy-era request', async () => {
+    // No _meta means a pre-2026 client by construction; sending the header
+    // would misclassify the request's era.
+    const { startHttpFixture } = await import('./fixtures/servers/http-server.mjs');
+    const fixture = await startHttpFixture('modern');
+    const transport = new HttpTransport(fixture.url);
+    try {
+      const ex = await transport.send({
+        jsonrpc: '2.0',
+        method: 'tools/list',
+        params: {},
+      });
+      expect(ex.requestHeaders['mcp-protocol-version']).toBeUndefined();
+    } finally {
+      await transport.close();
+      await fixture.close();
+    }
   });
 });

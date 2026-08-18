@@ -9,6 +9,7 @@
  *   legacy         a 2025-11-25 server: stateful, removed methods still live
  *   modern         a clean 2026-07-28 server
  *   strict-params  modern, but rejects any request carrying params._meta
+ *   dual-era       modern, but also still answers the legacy initialize
  */
 
 const TOOLS = [
@@ -74,6 +75,15 @@ export function createHandler(mode) {
       }
     } else {
       if (method === 'initialize') {
+        // Dual-era servers keep serving pre-2026 clients through the
+        // deprecation window while fully supporting 2026-07-28.
+        if (mode === 'dual-era') {
+          return ok(id, {
+            protocolVersion: '2025-11-25',
+            capabilities: { tools: {} },
+            serverInfo: SERVER_INFO,
+          });
+        }
         return fail(
           id,
           -32601,
@@ -90,11 +100,16 @@ export function createHandler(mode) {
       case 'server/discover':
         if (mode === 'legacy')
           return fail(id, -32601, 'Method not found: server/discover');
+        // Shape mirrors DiscoverResult in the 2026-07-28 schema: the field is
+        // supportedVersions, and identity lives in _meta rather than at the
+        // top level. Verified against the spec's own conformance corpus.
         return ok(id, {
           resultType: 'complete',
-          protocolVersions: ['2026-07-28'],
+          supportedVersions: ['2026-07-28'],
           capabilities: { tools: {}, resources: {} },
-          serverInfo: SERVER_INFO,
+          ttlMs: 3_600_000,
+          cacheScope: 'public',
+          _meta: { [META_SERVER_INFO]: SERVER_INFO },
         });
 
       case 'tools/list': {

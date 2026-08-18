@@ -8,7 +8,8 @@ const STDIO_SERVER = fileURLToPath(
   new URL('./fixtures/servers/stdio-server.mjs', import.meta.url),
 );
 
-export type FixtureMode = 'legacy' | 'modern' | 'strict-params' | 'strict-headers';
+export type FixtureMode =
+  'legacy' | 'modern' | 'strict-params' | 'strict-headers' | 'dual-era';
 
 /**
  * Run the checker against a fixture server over real stdio.

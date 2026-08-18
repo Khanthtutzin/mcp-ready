@@ -1,4 +1,4 @@
-import { HTTP_HEADERS } from '../protocol.js';
+import { HTTP_HEADERS, META } from '../protocol.js';
 import type {
   Exchange,
   JsonRpcRequest,
@@ -112,6 +112,19 @@ export class HttpTransport implements Transport {
       const toolName = (request.params as { name?: unknown } | undefined)?.name;
       if (typeof toolName === 'string') {
         headers[HTTP_HEADERS.name.toLowerCase()] = toolName;
+      }
+      // SEP-2243 requires MCP-Protocol-Version on every modern POST, and the
+      // spec requires it to agree with the _meta envelope. Mirroring it from
+      // the body rather than hardcoding it keeps the two in step even when a
+      // rule deliberately sends an unsupported version to probe the error
+      // path — otherwise the server answers HeaderMismatch and the rule never
+      // sees the rejection it was testing for.
+      //
+      // A request with no _meta is a legacy-era call by construction, and
+      // must not carry the header at all.
+      const declared = protocolVersionOf(request);
+      if (declared !== undefined) {
+        headers[HTTP_HEADERS.protocolVersion.toLowerCase()] = declared;
       }
     }
     Object.assign(headers, lowercaseKeys(options.headers ?? {}));
@@ -236,6 +249,18 @@ export class HttpTransport implements Transport {
   async close(): Promise<void> {
     // Stateless by construction: nothing to tear down.
   }
+}
+
+/**
+ * The protocol version a request declares in `params._meta`, if any.
+ *
+ * Returns `undefined` for requests with no envelope, which are legacy-era by
+ * definition and must not carry the header.
+ */
+function protocolVersionOf(request: JsonRpcRequest): string | undefined {
+  const meta = (request.params as { _meta?: Record<string, unknown> } | undefined)?._meta;
+  const value = meta?.[META.protocolVersion];
+  return typeof value === 'string' ? value : undefined;
 }
 
 function lowercaseKeys(obj: Record<string, string>): Record<string, string> {

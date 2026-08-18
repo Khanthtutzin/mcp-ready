@@ -33,6 +33,8 @@ export const META = {
 export const HTTP_HEADERS = {
   method: 'Mcp-Method',
   name: 'Mcp-Name',
+  /** Required on every modern Streamable HTTP POST; MUST match the _meta envelope. */
+  protocolVersion: 'MCP-Protocol-Version',
   /** Removed in 2026-07-28 along with protocol-level sessions (SEP-2567). */
   legacySessionId: 'Mcp-Session-Id',
 } as const;

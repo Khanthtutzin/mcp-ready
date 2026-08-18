@@ -23,6 +23,26 @@ silently start suppressing a different check.
 
 ### Fixed
 
+Four defects found by building the TypeScript SDK at `2.0.0-alpha.0` from source
+and running the checker against its examples over both transports. Every one
+produced a false finding against a correctly migrated server.
+
+- **The HTTP transport never sent `MCP-Protocol-Version`.** SEP-2243 requires it
+  on every modern Streamable HTTP POST. A real v2 server rejected every probe
+  with `-32020` and seven rules fired spuriously. The header is now mirrored
+  from the request's `_meta` envelope rather than hardcoded, so a rule that
+  deliberately sends an unsupported version still reaches the version-rejection
+  path it is testing instead of tripping HeaderMismatch.
+- **MCP001 checked `protocolVersions`.** The `DiscoverResult` field is
+  `supportedVersions`. Verified against the published schema, not inferred.
+- **MCP001 expected `serverInfo` at the top level of `DiscoverResult`.** The
+  schema has no such member; identity lives in `_meta`, which MCP018 already
+  covers. The duplicate check is gone.
+- **MCP002 reported dual-era servers as NOT READY.** A server that answers
+  `server/discover` and still handles `initialize` is serving both eras — the
+  migration path the SDK documents as the recommended first step. It is now an
+  advisory, and only a legacy-only server is an error.
+
 - **Windows: `--stdio "npx ..."` failed with `spawn npx ENOENT`.** `npx` is a
   `.cmd` shim on Windows, which Node cannot resolve without `shell: true` and,
   since the fix for CVE-2024-27980, refuses to spawn directly. `mcp-ready` now

@@ -7,7 +7,7 @@
 import { createHandler } from './handlers.mjs';
 
 const mode = process.argv[2] ?? 'modern';
-if (!['legacy', 'modern', 'strict-params'].includes(mode)) {
+if (!['legacy', 'modern', 'strict-params', 'dual-era'].includes(mode)) {
   process.stderr.write(`Unknown mode: ${mode}\n`);
   process.exit(1);
 }
