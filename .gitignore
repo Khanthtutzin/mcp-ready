@@ -7,3 +7,7 @@ coverage/
 .env.*
 npm-debug.log*
 .vitest/
+
+# Agent/editor local config.
+.claude/
+site/dist/

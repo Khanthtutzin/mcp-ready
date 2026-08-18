@@ -3,7 +3,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'coverage/**'] },
+  // site/ is its own package with a React-aware config of its own.
+  { ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'site/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
